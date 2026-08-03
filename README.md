@@ -15,7 +15,7 @@
 
   
 
-<b>Show do Milhão da família Aguiar</b>
+<b>Show do Milhão Guilda de Dev</b>
 
   
 
@@ -69,12 +69,7 @@ https://desafioshowdomilhao.netlify.app/
 ## 1) Definição do Desafio :muscle:
 
 
-A família Aguiar adora jogar e assistir televisão com todos juntos. Um de seus programas televisivos preferidos, de todos os tempos, é o programa de auditório ​ Show do Milhão​ , que passou entre 1999 e 2003 no SBT, com o apresentador Sílvio Santos.
-
-Eles sairão para uma viagem na próxima semana. Para manter a cultura familiar, levarão diversos jogos. Martha Aguiar, a mãe da família, teve a ideia de que seria incrível se eles pudessem ter uma versão para computador do jogo ​ Show do Milhão​ , já que estarão com seu notebook na viagem. 
-
-Como não conseguiram encontrar o jogo disponível para computador, cabe a você a ​ missão de
-desenvolver esse jogo para fazer a felicidade da família na viagem!
+Quem não dev não teme
 
 ## 2) Tecnologias usadas :rocket:
 Este projeto foi desenvolvido com as seguintes tecnologias:

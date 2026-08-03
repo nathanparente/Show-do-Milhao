@@ -9,8 +9,8 @@
       outlined
     >
       <p class="question center-item">
-        {{ questions[this.$route.params.questionId - 1].id + 1 }})
-        {{ questions[this.$route.params.questionId - 1].question }}
+        {{ questions[$route.params.questionId - 1].id + 1 }})
+        {{ questions[$route.params.questionId - 1].question }}
       </p>
     </v-card>
   </section>

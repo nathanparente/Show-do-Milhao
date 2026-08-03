@@ -54,7 +54,7 @@
           >{{ alternatives[i] }}</span
         >
       </v-avatar>
-      <v-hover v-if="choice == i" v-slot:default="{ hover }">
+      <v-hover v-if="choice == i" v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
@@ -71,7 +71,7 @@
           </v-list-item>
         </v-card>
       </v-hover>
-      <v-hover v-else="" v-slot:default="{ hover }">
+      <v-hover v-else="" v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
@@ -91,7 +91,7 @@
     </v-row>
     <AlertDialog
       :dialog="dialog"
-      :score="parseInt(this.$route.params.questionId - 1)"
+      :score="parseInt($route.params.questionId - 1)"
     />
   </section>
   <!-- END FIRST SECTION -->
@@ -113,7 +113,6 @@ export default {
   data() {
     return {
       id: 0,
-      audio: new Audio(require("@/assets/audio/tema-de-abertura.ogg")),
       onCallHelp: null,
       dialog: false,
       alternatives: ["A", "B", "C", "D"],
@@ -141,11 +140,14 @@ export default {
   },
 
   created() {
-    this.choices = this.questions[this.$route.params.questionId - 1].choices;
-    this.playAudio(true);
+    this.loadQuestion(); // Carrega a pergunta com base na nova ordem
   },
 
   methods: {
+    loadQuestion() {
+      // Carrega a pergunta atual com base no ID
+      this.choices = this.questions[this.$route.params.questionId].choices;
+    },
     handleAnswers: function (index) {
       /**
        * @param {Int} index,
@@ -164,14 +166,14 @@ export default {
     },
 
     rightQuestion: function () {
-      /**
-       * Função responsável por avançar no jogo, caso escolha-se a resposta correta
-       */
       var next = parseInt(this.$route.params.questionId) + 1;
       this.choice = null;
-      this.$router.push(`/questions/${next}`);
-      this.replaceState();
-      this.choices = this.questions[next - 1].choices;
+      if (next < this.questions.length) {
+        this.$router.push(`/questions/${next}`); // Redireciona para a próxima pergunta
+      } else {
+        // Lógica para finalizar o jogo ou mostrar resultados
+      }
+      this.loadQuestion(); // Carrega a próxima pergunta
     },
 
     wrongQuestion: function () {
@@ -179,7 +181,6 @@ export default {
        * Função responsável por finalizar o jogo, caso escolha-se a resposta errada
        */
       this.replaceState();
-      this.playAudio(false);
       this.dialog = true;
     },
 
@@ -253,21 +254,6 @@ export default {
         ],
         callHelp: "",
       });
-    },
-
-    playAudio: function (option) {
-      /**
-       * @param {Boolean} option,
-       * Função responsável por realizar o controle do player de audio do game durante a tela inicial
-       */
-      if (option) {
-        this.audio.play();
-      } else {
-        this.audio.play();
-        this.audio.pause();
-        this.audio.currentTime = 0;
-        //teste.ogg
-      }
     },
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },

@@ -69,47 +69,38 @@
 </template>
 
 <script>
+import questionsData from "@/assets/questions.json";
+
 export default {
   data() {
     return {
-      audio: new Audio(require("@/assets/audio/home.ogg")),
       aboutMe: [
         {
-          title: "Show do Milhão da família Aguiar",
-          subtitle: "Desafio Jovens Gênios Super Estágio em Desenvolvimento",
-          text: [
-            "A família Aguiar adora jogar e assistir televisão com todos juntos. Um de seus programas televisivos preferidos, de todos os tempos, é o programa de auditório ​ Show do Milhão​ , que passou entre 1999 e 2003 no SBT, com o apresentador Sílvio Santos.",
-            "Eles sairão para uma viagem na próxima semana. Para manter a cultura familiar, levarão diversos jogos. Martha Aguiar, a mãe da família, teve a ideia de que seria incrível se eles pudessem ter uma versão para computador do jogo ​ Show do Milhão​ , já que estarão com seu notebook na viagem. ",
-          ],
+          title: "Show do Milhão",
           src: require("@/assets/images/bg/jg.png"),
         },
       ],
+      questions: [],
     };
   },
-  created: function () {
-    this.playAudio(true);
-  },
   methods: {
-    playAudio: function (option) {
-      /**
-       * @param {Boolean} option,
-       * Função responsável por realizar o controle do player de audio do game durante a tela inicial
-       */
-      if (option) {
-        this.audio.play();
-      } else {
-        this.audio.play();
-        this.audio.pause();
-        this.audio.currentTime = 0;
-        //teste.ogg
-      }
-    },
     startGame: function () {
       /**
-       * Função responsável por começar o jogo e pausar a música
+       * Função responsável por começar o jogo
        */
-      this.playAudio(false);
-      this.$router.push("/questions/1");
+      this.shuffleQuestions(); // Embaralha as perguntas
+      this.$router.push(`/questions/${this.questions[0].id}`);
+    },
+    shuffleQuestions: function () {
+      // Função para embaralhar as perguntas
+      this.questions = questionsData.data.questions.slice(); // Copia as perguntas do JSON
+      for (let i = this.questions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.questions[i], this.questions[j]] = [
+          this.questions[j],
+          this.questions[i],
+        ]; // Troca as perguntas
+      }
     },
   },
 };
