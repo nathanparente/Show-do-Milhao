@@ -33,7 +33,7 @@ export const UI_TEXTS = Object.freeze({
   LOADING_TITLE: "🦙 Aguarde enquanto nossas lhamas separam as perguntas 🦙",
   LOADING_SUBTITLE: "Já pensou no que vai gastar quando ganhar um milhão ?",
   LOST_GAME_MODAL_TEXT:
-    "Mas já? Não foi dessa vez que vai levar o milhão então fique com uma pipoquinha de consolação",
+    "Mas já? Não foi dessa vez que vai levar o milhão então fique com uma pipoquinha de consolação 🍿",
   ERROR_TITLE: "Não foi possível conectar ao Ollama local.",
   ERROR_SUBTITLE: 'Verifique se o serviço está ativo com OLLAMA_ORIGINS="*".',
   ERROR_BUTTON: "Tentar Novamente",

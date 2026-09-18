@@ -28,18 +28,15 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Jogo Ativo -->
+        <!-- ESTADO 2: Jogo Ativo (Ocupando 100% da área útil central) -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
           align="start"
         >
-          <v-col cols="12" xs="12" md="6" justify="center" align="center">
+          <v-col cols="12" md="10" lg="8" class="px-4">
             <QuestionCard :questions="questions" />
             <QuestionsList :questions="questions" />
-          </v-col>
-          <v-col cols="12" xs="12" md="4" justify="center" align="center">
-            <HelpCard />
           </v-col>
         </v-row>
 
@@ -48,9 +45,9 @@
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
             <p class="caption mb-4">{{ uiTexts.ERROR_SUBTITLE }}</p>
-            <v-btn color="error" @click="gerarPerguntasComIA">{{
-              uiTexts.ERROR_BUTTON
-            }}</v-btn>
+            <v-btn color="error" @click="gerarPerguntasComIA">
+              {{ uiTexts.ERROR_BUTTON }}
+            </v-btn>
           </v-col>
         </v-row>
       </section>
@@ -66,10 +63,10 @@ import {
 } from "@/constants/gameConfig";
 
 export default {
+  name: "Questions",
   components: {
     QuestionCard: () => import("@/components/QuestionCard/QuestionCard"),
     QuestionsList: () => import("@/components/QuestionsList/QuestionsList"),
-    HelpCard: () => import("@/components/HelpCard/HelpCard"),
   },
   data() {
     return {
@@ -84,7 +81,6 @@ export default {
   methods: {
     async gerarPerguntasComIA() {
       this.isLoading = true;
-
       try {
         const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
           method: "POST",

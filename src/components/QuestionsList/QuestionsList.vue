@@ -2,38 +2,22 @@
   <!-- START QUESTION LIST AREA -->
   <section v-if="currentQuestion">
     <!-- Botões de Ajudas -->
-    <v-row class="mt-5" justify="space-between" align="space-between">
-      <v-col justify="space-between" align="space-between">
+    <v-row class="mt-5" justify="space-between" align="center">
+      <v-col
+        v-for="(btn, index) in buttons"
+        :key="btn.id"
+        justify="space-between"
+        align="center"
+      >
         <v-btn
-          :disabled="buttons[0].isDisabled"
+          :id="btn.id"
+          :disabled="btn.isDisabled"
           large
           fab
           color="white"
-          @click="getHalf(0)"
+          @click="handleHelp(btn.id, index)"
         >
-          <v-icon>{{ buttons[0].icon }}</v-icon>
-        </v-btn>
-      </v-col>
-      <v-col justify="space-between" align="space-between">
-        <v-btn
-          :disabled="buttons[1].isDisabled"
-          large
-          fab
-          color="white"
-          @click="getCallHelp(1)"
-        >
-          <v-icon>{{ buttons[1].icon }}</v-icon>
-        </v-btn>
-      </v-col>
-      <v-col justify="space-between" align="space-between">
-        <v-btn
-          :disabled="buttons[2].isDisabled"
-          large
-          fab
-          color="white"
-          @click="getProbability(2)"
-        >
-          <v-icon>{{ buttons[2].icon }}</v-icon>
+          <v-icon>{{ btn.icon }}</v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -91,10 +75,12 @@
       </v-hover>
     </v-row>
 
+    <!-- Modais de Alerta e Ajuda -->
     <AlertDialog
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
     />
+    <HelpCard />
   </section>
   <!-- END FIRST SECTION -->
 </template>
@@ -106,6 +92,7 @@ export default {
   name: "QuestionsList",
   components: {
     AlertDialog: () => import("@/components/AlertDialog/AlertDialog"),
+    HelpCard: () => import("@/components/HelpCard/HelpCard"),
   },
   props: {
     questions: {
@@ -119,17 +106,20 @@ export default {
       alternatives: ["A", "B", "C", "D"],
       buttons: [
         {
+          id: "btn-fifty",
           title: "50/50",
           icon: "mdi-circle-half-full",
           isDisabled: false,
         },
         {
-          title: "Ligar por Ajuda",
-          icon: "mdi-card-account-phone-outline",
+          id: "btn-gepeto",
+          title: "Gepeto",
+          icon: "mdi-robot",
           isDisabled: false,
         },
         {
-          title: "Ajuda da Platéia",
+          id: "btn-universitarios",
+          title: "Universitários",
           icon: "mdi-account-group",
           isDisabled: false,
         },
@@ -172,6 +162,15 @@ export default {
         this.choices = [...this.currentQuestion.choices];
       }
     },
+    handleHelp(id, index) {
+      if (id === "btn-fifty") {
+        this.getHalf(index);
+      } else if (id === "btn-gepeto") {
+        this.getGepetoHelp(index);
+      } else if (id === "btn-universitarios") {
+        this.getUniversitariosHelp(index);
+      }
+    },
     handleAnswers(index) {
       this.choice = index;
       if (this.choices[index].isTrue) {
@@ -207,27 +206,12 @@ export default {
       );
       this.buttons[index].isDisabled = true;
     },
-    getCallHelp(index) {
-      if (!this.currentQuestion) return;
-      const suggested = this.currentQuestion.choices.find(
-        (item) => item.isOnCallHelp
-      );
-      if (suggested) {
-        this.updateCallHelp(suggested.answer);
-      }
+    getGepetoHelp(index) {
+      this.updateCallHelp("gepeto");
       this.buttons[index].isDisabled = true;
     },
-    getProbability(index) {
-      if (!this.currentQuestion) return;
-      const choices = this.currentQuestion.choices;
-      const temp = [
-        ["Alternativas", "Porcentagem de votos da platéia"],
-        ["A", choices[0] ? choices[0].probability : 0],
-        ["B", choices[1] ? choices[1].probability : 0],
-        ["C", choices[2] ? choices[2].probability : 0],
-        ["D", choices[3] ? choices[3].probability : 0],
-      ];
-      this.updateChartData(temp);
+    getUniversitariosHelp(index) {
+      this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
     },
     replaceState() {
