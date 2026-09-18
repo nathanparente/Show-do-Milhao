@@ -88,17 +88,24 @@ export default {
             model: "llama3",
             format: "json",
             stream: false,
-            options: { temperature: 0.7 },
-            prompt: `Crie ${quantidadePerguntas} perguntas de múltipla escolha sobre ${temas.join(
+            options: { temperature: 0.3 },
+            prompt: `Você é o gerador oficial de perguntas do Show do Milhão.
+                  Crie ${quantidadePerguntas} perguntas de múltipla escolha sobre: ${temas.join(
               ", "
             )}.
-            Retorne APENAS um objeto JSON estrito no seguinte formato:
+
+            REGRAS OBRIGATÓRIAS:
+            1. "correta": Deve conter O TEXTO COMPLETO da resposta certa. NUNCA coloque apenas letras como "A", "B", "C" ou "D".
+            2. "incorretas": Deve conter um array com EXATAMENTE 3 textos de respostas erradas (NUNCA 4).
+            3. PROIBIDO colocar prefixos como "A)", "B)", "a.", "1." ou letras nas respostas. Retorne APENAS o texto puro.
+
+            Siga estritamente este exemplo JSON:
             {
               "perguntas": [
                 {
-                  "pergunta": "Texto da pergunta",
-                  "correta": "A alternativa correta",
-                  "incorretas": ["Incorreta 1", "Incorreta 2", "Incorreta 3"]
+                  "pergunta": "Qual elemento HTML é utilizado para criar um link?",
+                  "correta": "Tag <a>",
+                  "incorretas": ["Tag <link>", "Tag <href>", "Tag <url>"]
                 }
               ]
             }`,
