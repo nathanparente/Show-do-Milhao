@@ -20,12 +20,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.text-color {
-  color: #f1f3f4;
-  font-size: 8px;
-  text-align: right;
-  width: 100%;
-  padding-top: 48px;
-}
-</style>
+<style scoped src="./style.css"></style>

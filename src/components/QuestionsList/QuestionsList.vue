@@ -63,7 +63,6 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <!-- Adicionada a classe text-wrap -->
               <v-list-item-title class="headline mb-1 white--text text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
@@ -83,7 +82,6 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <!-- Adicionada a classe text-wrap -->
               <v-list-item-title class="headline mb-1 text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
@@ -154,11 +152,9 @@ export default {
     },
   },
   watch: {
-    // Atualiza as opções quando o jogador muda de pergunta (/questions/1 -> /questions/2)
     "$route.params.questionId"() {
       this.loadQuestion();
     },
-    // Atualiza a tela assim que as perguntas geradas pela IA terminarem de carregar
     questions: {
       immediate: true,
       handler(newVal) {
@@ -176,28 +172,23 @@ export default {
         this.choices = [...this.currentQuestion.choices];
       }
     },
-
     handleAnswers(index) {
       this.choice = index;
       if (this.choices[index].isTrue) {
-        this.color = "#57e71d"; // Verde
+        this.color = "#57e71d";
         setTimeout(() => {
           this.rightQuestion();
         }, 1000);
       } else {
-        this.color = "#f60808"; // Vermelho
+        this.color = "#f60808";
         this.wrongQuestion();
       }
     },
-
     rightQuestion() {
       const currentId = parseInt(this.$route.params.questionId) || 1;
-
-      // Se ainda houver perguntas restantes no jogo
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        // Encerra o jogo quando responde a última pergunta
         alert(
           "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!"
         );
@@ -205,21 +196,17 @@ export default {
         this.$router.push("/");
       }
     },
-
     wrongQuestion() {
       this.replaceState();
       this.dialog = true;
     },
-
     getHalf(index) {
       if (!this.currentQuestion) return;
-      // Filtra deixando apenas as opções que possuem isOnHalf: true
       this.choices = this.currentQuestion.choices.filter(
         (item) => item.isOnHalf
       );
       this.buttons[index].isDisabled = true;
     },
-
     getCallHelp(index) {
       if (!this.currentQuestion) return;
       const suggested = this.currentQuestion.choices.find(
@@ -230,7 +217,6 @@ export default {
       }
       this.buttons[index].isDisabled = true;
     },
-
     getProbability(index) {
       if (!this.currentQuestion) return;
       const choices = this.currentQuestion.choices;
@@ -244,7 +230,6 @@ export default {
       this.updateChartData(temp);
       this.buttons[index].isDisabled = true;
     },
-
     replaceState() {
       this.$store.replaceState({
         chartData: [
@@ -257,8 +242,9 @@ export default {
         callHelp: "",
       });
     },
-
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
 };
 </script>
+
+<style scoped src="./style.css"></style>

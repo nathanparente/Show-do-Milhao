@@ -1,0 +1,34 @@
+#container_hover {
+  display: inline-block;
+  overflow: hidden;
+}
+
+#container_hover img {
+  display: block;
+  -moz-transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+#container_hover:hover img {
+  -moz-transform: scale(1.1);
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.text-formater {
+  line-height: 1.6;
+  color: #424242;
+}
+
+.padding_20 {
+  padding: 20px;
+}
+
+.section_padding_0_50 {
+  padding: 0 0 50px 0;
+}
+
+.padding_top_50 {
+  padding-top: 50px;
+}

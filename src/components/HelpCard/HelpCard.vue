@@ -22,18 +22,16 @@
 
 <script>
 import { GChart } from "vue-google-charts";
-import { mapState, mapMutations } from "vuex";
+import { mapState } from "vuex";
 
 export default {
+  name: "HelpCard",
   components: {
     GChart,
   },
   data() {
     return {
       chartOptions: {
-        /**
-         * Configurações do google chart
-         */
         chart: {
           title: "Porcentagem de votos da platéia",
         },
@@ -43,26 +41,11 @@ export default {
   },
   computed: {
     ...mapState({
-      /**
-       * Mapstate
-       */
       chartData: (state) => state.chartData,
       callHelp: (state) => state.callHelp,
     }),
   },
-  methods: {},
 };
 </script>
 
-<style scoped>
-.text {
-  font-size: 18px;
-  color: black;
-  font-weight: 500;
-}
-.title {
-  font-size: 24px;
-  color: black;
-  font-weight: 700;
-}
-</style>
+<style scoped src="./style.css"></style>

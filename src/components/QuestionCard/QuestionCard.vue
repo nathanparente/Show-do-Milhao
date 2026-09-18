@@ -18,6 +18,7 @@
 
 <script>
 export default {
+  name: "QuestionCard",
   props: {
     questions: {
       type: [Array, Object],
@@ -32,14 +33,12 @@ export default {
       }
       return routeId - 1;
     },
-    // Busca a pergunta atual no array de perguntas gerado pela IA
     currentQuestion() {
       if (Array.isArray(this.questions) && this.questions.length > 0) {
         return this.questions[this.currentIndex] || null;
       }
       return null;
     },
-    // Número amigável exibido na pergunta /question/{number}
     displayIndex() {
       return this.currentIndex + 1;
     },
@@ -47,14 +46,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.title {
-  font-size: 32px;
-  color: black;
-  font-weight: 700;
-}
-.question {
-  font-size: 24px;
-  color: black;
-}
-</style>
+<style scoped src="./style.css"></style>

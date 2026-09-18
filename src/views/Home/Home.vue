@@ -42,7 +42,7 @@
         >
           <v-col cols="12" xs="12" md="4">
             <div class="padding_20">
-              <v-row class>
+              <v-row>
                 <p>{{ item.title }}</p>
               </v-row>
               <v-row class="section_padding_0_50">
@@ -72,32 +72,18 @@
 
 <script>
 export default {
+  name: "Home",
+  data() {
+    return {
+      aboutMe: [],
+    };
+  },
   methods: {
-    startGame: function () {
-      /**
-       * Inicia o jogo redirecionando sempre para a primeira pergunta (/questions/1).
-       * O Questions.vue se encarregará de chamar o Ollama e gerar as demais perguntas.
-       */
+    startGame() {
       this.$router.push("/questions/1");
     },
   },
 };
 </script>
 
-<style scoped>
-#container_hover {
-  display: inline-block;
-  overflow: hidden;
-}
-#container_hover img {
-  display: block;
-  -moz-transition: all 0.3s;
-  -webkit-transition: all 0.3s;
-  transition: all 0.3s;
-}
-#container_hover:hover img {
-  -moz-transform: scale(1.1);
-  -webkit-transform: scale(1.1);
-  transform: scale(1.1);
-}
-</style>
+<style scoped src="./style.css"></style>
