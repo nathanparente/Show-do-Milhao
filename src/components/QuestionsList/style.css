@@ -1,0 +1,9 @@
+.gradient {
+  background: linear-gradient(135deg, #012f6d 0%, #0d47a1 100%);
+  color: #ffffff;
+}
+
+.text-wrap {
+  white-space: normal !important;
+  word-break: break-word;
+}

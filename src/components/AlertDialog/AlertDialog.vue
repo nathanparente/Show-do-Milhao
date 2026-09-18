@@ -1,20 +1,26 @@
 <template>
   <v-row justify="center">
     <!-- START DIALOG -->
-    <v-dialog v-model="dialog" persistent max-width="512">
-      <v-card>
-        <v-card-title class="headline"
-          >Que pena, você errou ! ({{ score }} / 15)</v-card-title
-        >
-        <v-card-text
-          >Não fique triste, tente novamente e se sinta feliz por chegar até
-          aqui , você é incrível !
+    <v-dialog :value="dialog" persistent max-width="512">
+      <v-card class="modal-card">
+        <v-card-title class="headline modal-title">
+          Que pena, você errou! ({{ score }} / {{ totalQuestions }})
+        </v-card-title>
+
+        <v-card-text class="modal-text">
+          {{ modalText }}
         </v-card-text>
+
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="wrongQuestion()"
-            >Recomeçar</v-btn
+          <v-btn
+            color="green darken-1"
+            text
+            class="modal-btn"
+            @click="wrongQuestion"
           >
+            Recomeçar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -23,32 +29,34 @@
 </template>
 
 <script>
+import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
+
 export default {
+  name: "AlertDialog",
   props: {
     dialog: {
       type: Boolean,
       required: true,
-      default: () => {},
+      default: false,
     },
     score: {
       type: Number,
       required: true,
-      default: () => {},
+      default: 0,
     },
   },
   data() {
-    return {};
+    return {
+      totalQuestions: GAME_CONFIG.TOTAL_QUESTIONS,
+      modalText: UI_TEXTS.LOST_GAME_MODAL_TEXT,
+    };
   },
   methods: {
-    wrongQuestion: function () {
-      /**
-       * Função responsável por finalizar o jogo caso o jogador escolha a opção errada
-       */
-      this.dialog = false;
-      this.$router.push(`/`);
+    wrongQuestion() {
+      this.$router.push("/");
     },
   },
 };
 </script>
 
-<style></style>
+<style scoped src="./style.css"></style>

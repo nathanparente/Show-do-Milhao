@@ -4,7 +4,7 @@
       <!-- Botão Voltar/Home -->
       <section>
         <v-row class="mt-10 ml-10" justify="start" align="start">
-          <v-btn class="" large fab color="white" @click="replaceState">
+          <v-btn large fab color="white" @click="replaceState">
             <v-icon>mdi-home</v-icon>
           </v-btn>
         </v-row>
@@ -12,7 +12,7 @@
 
       <!-- Conteúdo do Jogo -->
       <section>
-        <!-- ESTADO 1: Carregando IA (Impede o QuestionCard de rodar sem dados) -->
+        <!-- ESTADO 1: Loading da IA -->
         <v-row v-if="isLoading" justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <v-progress-circular
@@ -22,34 +22,32 @@
               class="mb-4"
             ></v-progress-circular>
             <h2 class="text-h5 font-weight-bold">
-              🧠 A IA está gerando sua pergunta...
+              {{ uiTexts.LOADING_TITLE }}
             </h2>
-            <p class="subtitle-1">Aguarde alguns segundos</p>
+            <p class="subtitle-1">{{ uiTexts.LOADING_SUBTITLE }}</p>
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Exibe o jogo somente quando houver perguntas montadas -->
+        <!-- ESTADO 2: Jogo Ativo (Ocupando 100% da área útil central) -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
           align="start"
         >
-          <v-col cols="12" xs="12" md="6" justify="center" align="center">
+          <v-col cols="12" md="10" lg="8" class="px-4">
             <QuestionCard :questions="questions" />
             <QuestionsList :questions="questions" />
           </v-col>
-          <v-col cols="12" xs="12" md="4" justify="center" align="center">
-            <HelpCard />
-          </v-col>
         </v-row>
 
-        <!-- ESTADO 3: Trativa caso o Ollama falhe -->
+        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
-            <p class="text-h6">Não foi possível conectar ao Ollama local.</p>
-            <v-btn color="error" @click="gerarPerguntasComIA"
-              >Tentar Novamente</v-btn
-            >
+            <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
+            <p class="caption mb-4">{{ uiTexts.ERROR_SUBTITLE }}</p>
+            <v-btn color="error" @click="gerarPerguntasComIA">
+              {{ uiTexts.ERROR_BUTTON }}
+            </v-btn>
           </v-col>
         </v-row>
       </section>
@@ -58,16 +56,23 @@
 </template>
 
 <script>
+import {
+  GAME_CONFIG,
+  UI_TEXTS,
+  CHART_DEFAULT_DATA,
+} from "@/constants/gameConfig";
+
 export default {
+  name: "Questions",
   components: {
     QuestionCard: () => import("@/components/QuestionCard/QuestionCard"),
     QuestionsList: () => import("@/components/QuestionsList/QuestionsList"),
-    HelpCard: () => import("@/components/HelpCard/HelpCard"),
   },
   data() {
     return {
       questions: [],
       isLoading: true,
+      uiTexts: UI_TEXTS,
     };
   },
   async created() {
@@ -76,31 +81,16 @@ export default {
   methods: {
     async gerarPerguntasComIA() {
       this.isLoading = true;
-      const temas = ["Desenvolvimento Web", "UI/UX", "CRO"];
-      const quantidadePerguntas = 5;
-
       try {
-        const response = await fetch("http://localhost:11434/api/generate", {
+        const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "llama3",
+            model: GAME_CONFIG.MODEL_NAME,
             format: "json",
             stream: false,
-            options: { temperature: 0.7 },
-            prompt: `Crie ${quantidadePerguntas} perguntas de múltipla escolha sobre ${temas.join(
-              ", "
-            )}.
-            Retorne APENAS um objeto JSON estrito no seguinte formato:
-            {
-              "perguntas": [
-                {
-                  "pergunta": "Texto da pergunta",
-                  "correta": "A alternativa correta",
-                  "incorretas": ["Incorreta 1", "Incorreta 2", "Incorreta 3"]
-                }
-              ]
-            }`,
+            options: { temperature: GAME_CONFIG.TEMPERATURE },
+            prompt: GAME_CONFIG.PROMPT,
           }),
         });
 
@@ -117,31 +107,36 @@ export default {
       }
     },
 
+    limparTexto(texto) {
+      if (typeof texto !== "string") return "";
+      return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
+    },
+
     formatarParaModeloDoJogo(itemIA, idIndex) {
       let choices = [
         {
-          answer: itemIA.correta,
+          answer: this.limparTexto(itemIA.correta),
           isTrue: true,
           isOnHalf: true,
           isOnCallHelp: true,
           probability: 65,
         },
         {
-          answer: itemIA.incorretas[0],
+          answer: this.limparTexto(itemIA.incorretas[0]),
           isTrue: false,
           isOnHalf: true,
           isOnCallHelp: false,
           probability: 20,
         },
         {
-          answer: itemIA.incorretas[1],
+          answer: this.limparTexto(itemIA.incorretas[1]),
           isTrue: false,
           isOnHalf: false,
           isOnCallHelp: false,
           probability: 10,
         },
         {
-          answer: itemIA.incorretas[2],
+          answer: this.limparTexto(itemIA.incorretas[2]),
           isTrue: false,
           isOnHalf: false,
           isOnCallHelp: false,
@@ -159,18 +154,12 @@ export default {
       };
     },
 
-    replaceState: function () {
+    replaceState() {
       this.$store.replaceState({
-        chartData: [
-          ["Alternativas", "Porcentagem de votos da platéia"],
-          ["A", 0],
-          ["B", 0],
-          ["C", 0],
-          ["D", 0],
-        ],
+        chartData: CHART_DEFAULT_DATA,
         callHelp: "",
       });
-      this.$router.push(`/`);
+      this.$router.push("/");
     },
   },
 };

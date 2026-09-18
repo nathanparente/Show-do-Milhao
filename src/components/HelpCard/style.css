@@ -1,0 +1,35 @@
+.help-modal-card {
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.help-modal-title {
+  font-weight: 700;
+  color: #012f6d;
+  justify-content: center;
+  word-break: break-word;
+}
+
+.help-card-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.friend-help-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.6;
+  margin: 0 auto;
+  word-break: break-word;
+}
+
+.modal-btn {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}

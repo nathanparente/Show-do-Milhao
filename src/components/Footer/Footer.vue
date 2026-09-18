@@ -1,8 +1,9 @@
 <template>
   <!-- START FOOTER AREA-->
-  <v-footer class="justify-center" :color="color">
-    <div class="text-color text-center">
-      &copy; Lucas Finoti — {{ new Date().getFullYear() }}, All rights reserved
+  <v-footer class="end" :color="color">
+    <div class="text-color">
+      &copy; Adapted from the original game by Lucas Finoti — 2020, All rights
+      reserved
     </div>
   </v-footer>
   <!-- END FOOTER AREA -->
@@ -13,14 +14,10 @@ export default {
   name: "Footer",
   data() {
     return {
-      color: "#2a7886",
+      color: "#012f6d",
     };
   },
 };
 </script>
 
-<style scoped>
-.text-color {
-  color: #f1f3f4;
-}
-</style>
+<style scoped src="./style.css"></style>
