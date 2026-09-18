@@ -174,12 +174,12 @@ export default {
     handleAnswers(index) {
       this.choice = index;
       if (this.choices[index].isTrue) {
-        this.color = "#57e71d"; // Verde
+        this.color = "#57e71d";
         setTimeout(() => {
           this.rightQuestion();
         }, 1000);
       } else {
-        this.color = "#f60808"; // Vermelho
+        this.color = "#f60808";
         this.wrongQuestion();
       }
     },
@@ -226,7 +226,6 @@ export default {
         callHelp: "",
       });
     },
-
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
 };
