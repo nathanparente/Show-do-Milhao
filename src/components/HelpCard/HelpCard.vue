@@ -1,6 +1,6 @@
 <template>
   <!-- START THE HELPER CARD AREA -->
-  <section class="mt-100">
+  <section class="mt-20">
     <v-card
       class="mx-auto mt-10 mr-10 ml-10"
       max-width="100%"

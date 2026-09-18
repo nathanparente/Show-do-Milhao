@@ -3,7 +3,7 @@
     <div class="home app-bg-color fill-height">
       <!-- Botão Voltar/Home -->
       <section>
-        <v-row class="mt-10 ml-10" justify="start" align="start">
+        <v-row class="mt-6 ml-10" justify="start" align="start">
           <v-btn class="" large fab color="white" @click="replaceState">
             <v-icon>mdi-home</v-icon>
           </v-btn>
@@ -22,9 +22,10 @@
               class="mb-4"
             ></v-progress-circular>
             <h2 class="text-h5 font-weight-bold">
-              🧠 A IA está gerando sua pergunta...
+              Aguarde alguns instantes, enquanto nossas lhamas organizam as
+              perguntas ..
             </h2>
-            <p class="subtitle-1">Aguarde alguns segundos</p>
+            <p class="subtitle-1">Já pensou no que vai gastar seu milhão ?</p>
           </v-col>
         </v-row>
 

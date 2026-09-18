@@ -20,7 +20,11 @@
             align="center"
             class="hidden-md-and-down"
           >
-            <v-img max-height="45vh" src="@/assets/images/bg/3.png"></v-img>
+            <v-img
+              max-height="45vh"
+              contain
+              src="@/assets/images/bg/3.png"
+            ></v-img>
           </v-col>
         </v-row>
       </section>
@@ -68,21 +72,11 @@
 
 <script>
 export default {
-  data() {
-    return {
-      aboutMe: [
-        {
-          title: "Show do Milhão",
-          src: require("@/assets/images/bg/jg.png"),
-        },
-      ],
-    };
-  },
   methods: {
     startGame: function () {
       /**
        * Inicia o jogo redirecionando sempre para a primeira pergunta (/questions/1).
-       * O Questions.vue se encarregará de chamar o Ollama e gerar as 5 perguntas.
+       * O Questions.vue se encarregará de chamar o Ollama e gerar as demais perguntas.
        */
       this.$router.push("/questions/1");
     },

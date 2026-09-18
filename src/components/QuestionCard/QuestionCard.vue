@@ -1,6 +1,6 @@
 <template>
   <!-- START QUESTION CARD AREA -->
-  <section v-if="currentQuestion" class="mt-100">
+  <section v-if="currentQuestion" class="mt-20">
     <v-card
       class="mx-auto mt-10 mr-10 ml-10"
       max-width="100%"
@@ -25,22 +25,21 @@ export default {
     },
   },
   computed: {
-    // Converte a rota (1 a 5) no índice do Array JavaScript (0 a 4)
     currentIndex() {
       const routeId = Number(this.$route.params.questionId);
       if (isNaN(routeId) || routeId < 1) {
-        return 0; // Se a rota for 0 ou inválida, força o primeiro índice (0)
+        return 0;
       }
-      return routeId - 1; // Ex: Rota /questions/1 vira índice 0
+      return routeId - 1;
     },
-    // Busca a pergunta atual no array de 5 perguntas gerado pela IA
+    // Busca a pergunta atual no array de perguntas gerado pela IA
     currentQuestion() {
       if (Array.isArray(this.questions) && this.questions.length > 0) {
         return this.questions[this.currentIndex] || null;
       }
       return null;
     },
-    // Número amigável exibido na pergunta (1 a 5)
+    // Número amigável exibido na pergunta /question/{number}
     displayIndex() {
       return this.currentIndex + 1;
     },

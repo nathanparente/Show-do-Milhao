@@ -1,6 +1,7 @@
 <template>
   <!-- START QUESTION LIST AREA -->
-  <section>
+  <section v-if="currentQuestion">
+    <!-- Botões de Ajudas -->
     <v-row class="mt-5" justify="space-between" align="space-between">
       <v-col justify="space-between" align="space-between">
         <v-btn
@@ -36,6 +37,8 @@
         </v-btn>
       </v-col>
     </v-row>
+
+    <!-- Lista de Alternativas -->
     <v-row
       v-for="(item, i) in choices"
       :key="i"
@@ -44,17 +47,13 @@
       align="space-between"
     >
       <v-avatar class="gradient" size="62">
-        <span
-          class="headline"
-          style="
-             {
-              font-weight: 900;
-            }
-          "
-          >{{ alternatives[i] }}</span
-        >
+        <span class="headline" style="font-weight: 900">
+          {{ alternatives[i] }}
+        </span>
       </v-avatar>
-      <v-hover v-if="choice == i" v-slot="{ hover }">
+
+      <!-- Alternativa Selecionada -->
+      <v-hover v-if="choice === i" v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
@@ -64,14 +63,17 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1">
-                {{ item.answer }}</v-list-item-title
-              >
+              <!-- Adicionada a classe text-wrap -->
+              <v-list-item-title class="headline mb-1 white--text text-wrap">
+                {{ item.answer }}
+              </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-card>
       </v-hover>
-      <v-hover v-else="" v-slot="{ hover }">
+
+      <!-- Alternativas Disponíveis -->
+      <v-hover v-else v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
@@ -81,14 +83,16 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1">
-                {{ item.answer }}</v-list-item-title
-              >
+              <!-- Adicionada a classe text-wrap -->
+              <v-list-item-title class="headline mb-1 text-wrap">
+                {{ item.answer }}
+              </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-card>
       </v-hover>
     </v-row>
+
     <AlertDialog
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
@@ -98,22 +102,21 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapMutations } from "vuex";
 
 export default {
+  name: "QuestionsList",
   components: {
     AlertDialog: () => import("@/components/AlertDialog/AlertDialog"),
   },
   props: {
     questions: {
-      type: Object,
-      default: () => {},
+      type: [Array, Object],
+      default: () => [],
     },
   },
   data() {
     return {
-      id: 0,
-      onCallHelp: null,
       dialog: false,
       alternatives: ["A", "B", "C", "D"],
       buttons: [
@@ -133,117 +136,116 @@ export default {
           isDisabled: false,
         },
       ],
-      choices: {},
+      choices: [],
       choice: null,
       color: "#efefef",
     };
   },
-
-  created() {
-    this.loadQuestion(); // Carrega a pergunta com base na nova ordem
+  computed: {
+    currentIndex() {
+      const qId = parseInt(this.$route.params.questionId) || 1;
+      return Math.max(0, qId - 1);
+    },
+    currentQuestion() {
+      if (Array.isArray(this.questions) && this.questions.length > 0) {
+        return this.questions[this.currentIndex] || null;
+      }
+      return null;
+    },
   },
-
+  watch: {
+    // Atualiza as opções quando o jogador muda de pergunta (/questions/1 -> /questions/2)
+    "$route.params.questionId"() {
+      this.loadQuestion();
+    },
+    // Atualiza a tela assim que as perguntas geradas pela IA terminarem de carregar
+    questions: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          this.loadQuestion();
+        }
+      },
+    },
+  },
   methods: {
     loadQuestion() {
-      // Carrega a pergunta atual com base no ID
-      this.choices = this.questions[this.$route.params.questionId].choices;
+      this.choice = null;
+      this.color = "#efefef";
+      if (this.currentQuestion && this.currentQuestion.choices) {
+        this.choices = [...this.currentQuestion.choices];
+      }
     },
-    handleAnswers: function (index) {
-      /**
-       * @param {Int} index,
-       * Função responsável realizar o controle das respostas escolhidas pelo usuário
-       */
+
+    handleAnswers(index) {
       this.choice = index;
       if (this.choices[index].isTrue) {
-        this.color = "#57e71d";
+        this.color = "#57e71d"; // Verde
         setTimeout(() => {
-          this.rightQuestion(index);
+          this.rightQuestion();
         }, 1000);
       } else {
-        this.color = "#f60808";
+        this.color = "#f60808"; // Vermelho
         this.wrongQuestion();
       }
     },
 
-    rightQuestion: function () {
-      var next = parseInt(this.$route.params.questionId) + 1;
-      this.choice = null;
-      if (next < this.questions.length) {
-        this.$router.push(`/questions/${next}`); // Redireciona para a próxima pergunta
+    rightQuestion() {
+      const currentId = parseInt(this.$route.params.questionId) || 1;
+
+      // Se ainda houver perguntas restantes no jogo
+      if (currentId < this.questions.length) {
+        this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        // Lógica para finalizar o jogo ou mostrar resultados
+        // Encerra o jogo quando responde a última pergunta
+        alert(
+          "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!"
+        );
+        this.replaceState();
+        this.$router.push("/");
       }
-      this.loadQuestion(); // Carrega a próxima pergunta
     },
 
-    wrongQuestion: function () {
-      /**
-       * Função responsável por finalizar o jogo, caso escolha-se a resposta errada
-       */
+    wrongQuestion() {
       this.replaceState();
       this.dialog = true;
     },
 
-    getHalf: function (index) {
-      /**
-       * @param {Int} index,
-       * Função responsável por reduzir as opções pela metade
-       */
-      var next = parseInt(this.$route.params.questionId) + 1;
-      this.choice = null;
-      var choices = this.questions[next - 2].choices;
-      var temp = [];
-      choices.forEach((element) => {
-        if (element.isOnHalf) {
-          temp.push(element);
-        }
-      });
-      this.choices = temp;
+    getHalf(index) {
+      if (!this.currentQuestion) return;
+      // Filtra deixando apenas as opções que possuem isOnHalf: true
+      this.choices = this.currentQuestion.choices.filter(
+        (item) => item.isOnHalf
+      );
       this.buttons[index].isDisabled = true;
     },
 
-    getCallHelp: function (index) {
-      /**
-       * @param {Int} index,
-       * Função responsável obter a resposta sugerida pela ligação e salva-la no state do Vuex
-       */
-      var next = parseInt(this.$route.params.questionId) + 1;
-      this.choice = null;
-      var choices = this.questions[next - 2].choices;
-      var temp;
-      choices.forEach((element) => {
-        if (element.isOnCallHelp) {
-          temp = element.answer;
-        }
-      });
-      this.updateCallHelp(temp);
+    getCallHelp(index) {
+      if (!this.currentQuestion) return;
+      const suggested = this.currentQuestion.choices.find(
+        (item) => item.isOnCallHelp
+      );
+      if (suggested) {
+        this.updateCallHelp(suggested.answer);
+      }
       this.buttons[index].isDisabled = true;
     },
 
-    getProbability: function (index) {
-      /**
-       * @param {Int} index,
-       * Função responsável obter as respostas sugeridas pela platéia e salva-las no state do Vuex
-       */
-      var next = parseInt(this.$route.params.questionId) + 1;
-      this.choice = null;
-      var choices = this.questions[next - 2].choices;
-      var temp = [];
-      temp = [
+    getProbability(index) {
+      if (!this.currentQuestion) return;
+      const choices = this.currentQuestion.choices;
+      const temp = [
         ["Alternativas", "Porcentagem de votos da platéia"],
-        ["A", choices[0].probability],
-        ["B", choices[1].probability],
-        ["C", choices[2].probability],
-        ["D", choices[3].probability],
+        ["A", choices[0] ? choices[0].probability : 0],
+        ["B", choices[1] ? choices[1].probability : 0],
+        ["C", choices[2] ? choices[2].probability : 0],
+        ["D", choices[3] ? choices[3].probability : 0],
       ];
       this.updateChartData(temp);
       this.buttons[index].isDisabled = true;
     },
 
-    replaceState: function () {
-      /**
-       * Função responsável por restaurar os padrões dos estados do Vuex
-       */
+    replaceState() {
       this.$store.replaceState({
         chartData: [
           ["Alternativas", "Porcentagem de votos da platéia"],
@@ -255,9 +257,8 @@ export default {
         callHelp: "",
       });
     },
+
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
 };
 </script>
-
-<style></style>
