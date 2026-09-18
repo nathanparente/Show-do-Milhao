@@ -173,7 +173,7 @@ export default {
     handleAnswers(index) {
       this.choice = index;
       if (this.choices[index].isTrue) {
-        this.color = "#57e71d"; // Verde
+        this.color = "#57e71d";
         setTimeout(() => {
           this.rightQuestion();
         }, 1000);
@@ -362,7 +362,6 @@ export default {
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
     },
-
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
 };
