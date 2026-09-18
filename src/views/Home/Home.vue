@@ -24,7 +24,6 @@
           </v-col>
         </v-row>
       </section>
-      <!-- END FIRST SECTION -->
 
       <!-- START ABOUT AREA -->
       <section
@@ -40,7 +39,7 @@
           <v-col cols="12" xs="12" md="4">
             <div class="padding_20">
               <v-row class>
-                <P>{{ item.title }}</P>
+                <p>{{ item.title }}</p>
               </v-row>
               <v-row class="section_padding_0_50">
                 <h2>{{ item.subtitle }}</h2>
@@ -50,7 +49,6 @@
               </p>
             </div>
           </v-col>
-
           <v-col
             cols="12"
             xs="12"
@@ -69,8 +67,6 @@
 </template>
 
 <script>
-import questionsData from "@/assets/questions.json";
-
 export default {
   data() {
     return {
@@ -80,27 +76,15 @@ export default {
           src: require("@/assets/images/bg/jg.png"),
         },
       ],
-      questions: [],
     };
   },
   methods: {
     startGame: function () {
       /**
-       * Função responsável por começar o jogo
+       * Inicia o jogo redirecionando sempre para a primeira pergunta (/questions/1).
+       * O Questions.vue se encarregará de chamar o Ollama e gerar as 5 perguntas.
        */
-      this.shuffleQuestions(); // Embaralha as perguntas
-      this.$router.push(`/questions/${this.questions[0].id}`);
-    },
-    shuffleQuestions: function () {
-      // Função para embaralhar as perguntas
-      this.questions = questionsData.data.questions.slice(); // Copia as perguntas do JSON
-      for (let i = this.questions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [this.questions[i], this.questions[j]] = [
-          this.questions[j],
-          this.questions[i],
-        ]; // Troca as perguntas
-      }
+      this.$router.push("/questions/1");
     },
   },
 };
@@ -111,14 +95,12 @@ export default {
   display: inline-block;
   overflow: hidden;
 }
-
 #container_hover img {
   display: block;
   -moz-transition: all 0.3s;
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
 }
-
 #container_hover:hover img {
   -moz-transform: scale(1.1);
   -webkit-transform: scale(1.1);
