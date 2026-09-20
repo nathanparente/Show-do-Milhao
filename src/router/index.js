@@ -14,15 +14,23 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/themes",
+    name: "Themes",
+    component: () => import("@/views/Themes/Themes.vue"),
+  },
+  {
     path: "/questions/:questionId",
     name: "questions",
     component: load("Questions"),
   },
   {
     path: "/questions",
-    redirect: (to) => {
-      return "/questions/1";
-    },
+    redirect: () => "/questions/1",
+  },
+  {
+    path: "/victory",
+    name: "victory",
+    component: load("Victory"),
   },
 ];
 

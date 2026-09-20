@@ -1,73 +1,60 @@
 <template>
-  <v-app>
-    <div class="home app-bg-color fill-height">
-      <!-- START FIRST SECTION -->
-      <section>
-        <v-row justify="center" align="end">
-          <v-col cols="12" xs="12" md="7" justify="center" align="center">
-            <v-img min-height="65vh" src="@/assets/images/bg/1.png"></v-img>
-            <a @click="startGame">
-              <div id="container_hover">
-                <img id="image" height="80vh" src="@/assets/images/bg/2.png" />
-              </div>
-            </a>
-          </v-col>
-          <v-col
-            cols="12"
-            xs="12"
-            md="4"
-            justify="space-around"
-            align="center"
-            class="hidden-md-and-down"
-          >
-            <v-img
-              max-height="45vh"
-              contain
-              src="@/assets/images/bg/3.png"
-            ></v-img>
-          </v-col>
-        </v-row>
-      </section>
+  <v-container fluid class="fill-height app-bg-color pa-0">
+    <!-- FIRST SECTION: Centralizada perfeitamente no meio da tela -->
+    <v-row justify="center" align="center" class="fill-height my-auto">
+      <v-col cols="12" xs="12" md="7" class="text-center">
+        <v-img max-height="50vh" contain src="@/assets/images/bg/1.png"></v-img>
 
-      <!-- START ABOUT AREA -->
-      <section
-        id="about-me"
-        class="about-me section_horizontal_padding_40 text-start"
+        <a class="mt-4 d-inline-block" @click="startGame">
+          <div id="container_hover">
+            <img id="image" height="80px" src="@/assets/images/bg/2.png" />
+          </div>
+        </a>
+      </v-col>
+
+      <v-col cols="12" xs="12" md="4" class="text-center hidden-md-and-down">
+        <v-img max-height="45vh" contain src="@/assets/images/bg/3.png"></v-img>
+      </v-col>
+    </v-row>
+
+    <!-- ABOUT AREA -->
+    <section
+      v-if="aboutMe && aboutMe.length"
+      id="about-me"
+      class="about-me section_horizontal_padding_40 text-start w-100"
+    >
+      <v-row
+        v-for="(item, i) in aboutMe"
+        :key="i"
+        justify="center"
+        align="center"
       >
-        <v-row
-          v-for="(item, i) in aboutMe"
-          :key="i"
+        <v-col cols="12" xs="12" md="4">
+          <div class="padding_20">
+            <v-row>
+              <p>{{ item.title }}</p>
+            </v-row>
+            <v-row class="section_padding_0_50">
+              <h2>{{ item.subtitle }}</h2>
+            </v-row>
+            <p v-for="(itens, n) in item.text" :key="n" class="text-formater">
+              {{ itens }}
+            </p>
+          </div>
+        </v-col>
+        <v-col
+          cols="12"
+          xs="12"
+          md="4"
           justify="center"
           align="center"
+          class="padding_top_50 center"
         >
-          <v-col cols="12" xs="12" md="4">
-            <div class="padding_20">
-              <v-row>
-                <p>{{ item.title }}</p>
-              </v-row>
-              <v-row class="section_padding_0_50">
-                <h2>{{ item.subtitle }}</h2>
-              </v-row>
-              <p v-for="(itens, n) in item.text" :key="n" class="text-formater">
-                {{ itens }}
-              </p>
-            </div>
-          </v-col>
-          <v-col
-            cols="12"
-            xs="12"
-            md="4"
-            justify="center"
-            align="center"
-            class="padding_top_50 center"
-          >
-            <v-img contain :src="item.src" height="128px" width="128px" />
-          </v-col>
-        </v-row>
-      </section>
-      <!-- END ABOUT AREA -->
-    </div>
-  </v-app>
+          <v-img contain :src="item.src" height="128px" width="128px" />
+        </v-col>
+      </v-row>
+    </section>
+  </v-container>
 </template>
 
 <script>
@@ -80,7 +67,7 @@ export default {
   },
   methods: {
     startGame() {
-      this.$router.push("/questions/1");
+      this.$router.push("/themes");
     },
   },
 };

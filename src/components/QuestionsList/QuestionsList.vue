@@ -11,13 +11,13 @@
       >
         <v-btn
           :id="btn.id"
-          :disabled="btn.isDisabled"
+          :disabled="isButtonDisabled(btn)"
           large
           fab
           color="white"
           @click="handleHelp(btn.id, index)"
         >
-          <v-icon>{{ btn.icon }}</v-icon>
+          <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -36,7 +36,7 @@
         </span>
       </v-avatar>
 
-      <!-- Alternativa Selecionada -->
+      <!-- Alternativa Selecionada (Mantém mesmo tamanho e cor de texto) -->
       <v-hover v-if="choice === i" v-slot="{ hover }">
         <v-card
           rounded-8
@@ -47,7 +47,7 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1 white--text text-wrap">
+              <v-list-item-title class="title mb-1 text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
             </v-list-item-content>
@@ -55,18 +55,19 @@
         </v-card>
       </v-hover>
 
-      <!-- Alternativas Disponíveis -->
+      <!-- Alternativas Disponíveis com efeito Hover aprimorado -->
       <v-hover v-else v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
           outlined
+          class="choice-card"
           :elevation="hover ? 12 : 2"
           @click="handleAnswers(i)"
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1 text-wrap">
+              <v-list-item-title class="title mb-1 text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
             </v-list-item-content>
@@ -80,13 +81,14 @@
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
     />
-    <HelpCard />
+    <HelpCard @apply-cartas="removeWrongChoices" />
   </section>
   <!-- END FIRST SECTION -->
 </template>
 
 <script>
 import { mapMutations } from "vuex";
+import { UI_TEXTS } from "@/constants/gameConfig";
 
 export default {
   name: "QuestionsList",
@@ -104,11 +106,12 @@ export default {
     return {
       dialog: false,
       alternatives: ["A", "B", "C", "D"],
+      uiTexts: UI_TEXTS,
       buttons: [
         {
-          id: "btn-fifty",
-          title: "50/50",
-          icon: "mdi-circle-half-full",
+          id: "btn-cartas",
+          title: "Cartas",
+          icon: "mdi-cards-spade",
           isDisabled: false,
         },
         {
@@ -140,6 +143,13 @@ export default {
       }
       return null;
     },
+    isLastQuestion() {
+      return (
+        Array.isArray(this.questions) &&
+        this.questions.length > 0 &&
+        this.currentIndex === this.questions.length - 1
+      );
+    },
   },
   watch: {
     "$route.params.questionId"() {
@@ -162,9 +172,17 @@ export default {
         this.choices = [...this.currentQuestion.choices];
       }
     },
+    isButtonDisabled(btn) {
+      if (btn.id === "btn-gepeto" && this.isLastQuestion) {
+        return true;
+      }
+      return btn.isDisabled;
+    },
     handleHelp(id, index) {
-      if (id === "btn-fifty") {
-        this.getHalf(index);
+      if (this.isButtonDisabled(this.buttons[index])) return;
+
+      if (id === "btn-cartas") {
+        this.getCartasHelp(index);
       } else if (id === "btn-gepeto") {
         this.getGepetoHelp(index);
       } else if (id === "btn-universitarios") {
@@ -188,41 +206,48 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        alert(
-          "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!"
-        );
         this.replaceState();
-        this.$router.push("/");
+        this.$router.push("/victory");
       }
     },
     wrongQuestion() {
       this.replaceState();
       this.dialog = true;
     },
-    getHalf(index) {
-      if (!this.currentQuestion) return;
-      this.choices = this.currentQuestion.choices.filter(
-        (item) => item.isOnHalf
-      );
+    getCartasHelp(index) {
+      this.updateCallHelp("cartas");
       this.buttons[index].isDisabled = true;
     },
     getGepetoHelp(index) {
-      this.updateCallHelp("gepeto");
+      if (!this.currentQuestion) return;
+      const respostaCorreta = this.currentQuestion.choices.find(
+        (item) => item.isTrue
+      );
+      this.updateCallHelp({
+        type: "gepeto",
+        answer: respostaCorreta ? respostaCorreta.answer : "",
+      });
       this.buttons[index].isDisabled = true;
     },
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
     },
+    removeWrongChoices(count) {
+      if (!this.currentQuestion || !this.choices) return;
+      const wrongChoices = this.choices.filter((item) => !item.isTrue);
+      const numToRemove =
+        count === 4 ? 0 : Math.min(count, wrongChoices.length);
+      if (numToRemove === 0) return;
+
+      const shuffledWrong = [...wrongChoices].sort(() => Math.random() - 0.5);
+      const wrongToKeep = shuffledWrong.slice(numToRemove);
+      this.choices = this.choices.filter(
+        (item) => item.isTrue || wrongToKeep.includes(item)
+      );
+    },
     replaceState() {
       this.$store.replaceState({
-        chartData: [
-          ["Alternativas", "Porcentagem de votos da platéia"],
-          ["A", 0],
-          ["B", 0],
-          ["C", 0],
-          ["D", 0],
-        ],
         callHelp: "",
       });
     },

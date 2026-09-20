@@ -35,9 +35,13 @@ Diferente das versões com banco de dados estático, este projeto consome a **LL
 ## ✨ Funcionalidades
 
 - **Perguntas Dinâmicas com IA:** Geração sem necessidade de APIs pagas ou chaves de acesso.
-- **Ajuda 50/50:** Elimina metade das alternativas incorretas da tela.
-- **Chamada de Ajuda:** Sugere a alternativa correta com base no processamento da IA.
-- **Gráfico da Platéia:** Simula a porcentagem de votos do público para cada alternativa.
+- **Curva de Dificuldade Progressiva (Porcentagem):** A complexidade das perguntas é calculada automaticamente com base no total de perguntas da partida:
+- - 0% a 50%: Nível Fácil (conceitos fundamentais e definições).
+- - 50% a 80%: Nível Médio (boas práticas e cenários práticos intermediários).
+- - 80% a 100%: Nível Difícil/Especialista (arquitetura avançada, diagnósticos em produção e trade-offs críticos).
+- **Cartas:** Modal com 4 naipes de baralho (com valores de 1 a 4 sorteados aleatoriamente a cada partida) que elimina a quantidade correspondente de alternativas incorretas.
+- **Gepeto:** Exibe a resposta correta por extenso gerada pela IA. Fica automaticamente desabilitado na última pergunta (Pergunta do Milhão).
+- **Universitários:** Solicita que o jogador peça ajuda de amigos para achar a resposta certa.
 
 ---
 
@@ -85,11 +89,14 @@ const response = await fetch("http://localhost:11434/api/generate", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    model: "llama3",
+    model: GAME_CONFIG.MODEL_NAME,
     format: "json",
     stream: false,
-    options: { temperature: 0.7 },
-    prompt: `Crie 5 perguntas de múltipla escolha sobre Desenvolvimento Web, UI/UX e CRO no formato JSON...`
+    options: {
+      temperature: GAME_CONFIG.TEMPERATURE,
+      num_ctx: 4096 // Janela de contexto estendida para garantir o retorno completo
+    },
+    prompt: GAME_CONFIG.GET_PROMPT(GAME_CONFIG.THEMES, GAME_CONFIG.TOTAL_QUESTIONS)
   })
 });
 

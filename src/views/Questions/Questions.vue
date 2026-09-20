@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <div class="home app-bg-color fill-height">
-      <!-- Botão Voltar/Home -->
       <section>
         <v-row class="mt-10 ml-10" justify="start" align="start">
           <v-btn large fab color="white" @click="replaceState">
@@ -10,17 +9,21 @@
         </v-row>
       </section>
 
-      <!-- Conteúdo do Jogo -->
       <section>
-        <!-- ESTADO 1: Loading da IA -->
-        <v-row v-if="isLoading" justify="center" align="center" class="mt-12">
+        <v-row
+          v-if="isLoading"
+          justify="center"
+          align="center"
+          style="min-height: 70vh"
+        >
           <v-col cols="12" class="text-center white--text">
-            <v-progress-circular
-              indeterminate
-              color="white"
-              size="64"
-              class="mb-4"
-            ></v-progress-circular>
+            <v-img
+              src="@/assets/images/bg/loading-llama.gif"
+              max-width="200"
+              max-height="200"
+              contain
+              class="mx-auto mb-4"
+            ></v-img>
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
@@ -28,7 +31,6 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Jogo Ativo (Ocupando 100% da área útil central) -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
@@ -40,7 +42,6 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
@@ -56,11 +57,7 @@
 </template>
 
 <script>
-import {
-  GAME_CONFIG,
-  UI_TEXTS,
-  CHART_DEFAULT_DATA,
-} from "@/constants/gameConfig";
+import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
 
 export default {
   name: "Questions",
@@ -82,6 +79,10 @@ export default {
     async gerarPerguntasComIA() {
       this.isLoading = true;
       try {
+        const activeThemes = this.$route.query.themes
+          ? this.$route.query.themes.split(",")
+          : GAME_CONFIG.THEMES;
+
         const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -89,8 +90,14 @@ export default {
             model: GAME_CONFIG.MODEL_NAME,
             format: "json",
             stream: false,
-            options: { temperature: GAME_CONFIG.TEMPERATURE },
-            prompt: GAME_CONFIG.PROMPT,
+            options: {
+              temperature: GAME_CONFIG.TEMPERATURE,
+              num_ctx: 4096,
+            },
+            prompt: GAME_CONFIG.GET_PROMPT(
+              activeThemes,
+              GAME_CONFIG.TOTAL_QUESTIONS
+            ),
           }),
         });
 
@@ -156,7 +163,6 @@ export default {
 
     replaceState() {
       this.$store.replaceState({
-        chartData: CHART_DEFAULT_DATA,
         callHelp: "",
       });
       this.$router.push("/");
