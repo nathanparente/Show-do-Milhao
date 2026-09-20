@@ -26,21 +26,21 @@ export const GAME_CONFIG = Object.freeze({
         : `Perguntas ${hardStart} até ${quantidade}`;
 
     return `
-Você é um Arquiteto de Software Sênior criando um quiz técnico de precisão absoluta.
+Você é um Arquiteto de Software Sênior e Especialista em UI/UX/CRO criando um quiz técnico de precisão absoluta.
 Crie exatas ${quantidade} perguntas de múltipla escolha sobre os temas: ${temas.join(
       ", "
     )}.
 
 CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM:
 - ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais e definições diretas.
-- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Sintaxe, mecanismos de protocolos e padrões técnicos.
-- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Diagnósticos avançados, comportamento de código e especificações formais.
+- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Sintaxe, padrões técnicos e boas práticas.
+- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Diagnósticos avançados em produção, comportamento de código, especificações formais e trade-offs críticos.
 
 REGRAS DE OURO PARA EVITAR ERROS E AMBIGUIDADE (OBRIGATÓRIO):
 1. PROIBIDO SUBJETIVIDADE E SUPERLATIVOS: É ESTRITAMENTE PROIBIDO fazer perguntas contendo palavras como "mais comum", "mais eficaz", "melhor", "mais importante", "ideal" ou "principal".
 2. APENAS FATOS DETERMINÍSTICOS: As perguntas devem ser baseadas em fatos técnicos inquestionáveis (ex: "Qual cabeçalho HTTP é usado para...", "Qual método do evento impede o comportamento padrão no JS...", "O que significa a sigla...").
 3. APENAS TEXTO PORTUGUÊS PT-BR: Todos os textos devem estar em português correto
-4. TERMOS TÉCNICOS EM INGLÊS (en): Todos os termos técnicos como Cache, User-Agent, Framework, Hydratation, Schema, Layout, Dataset, devem ser em inglês.
+4. TERMOS TÉCNICOS EM INGLÊS (en): Todos os termos técnicos como Cache, User-Agent, Framework, Hydratation, Schema, Layout, Dataset e entre outros devem ser em inglês.
 5. ALTERNATIVAS SIMÉTRICAS E CURTAS: Todas as 4 alternativas DEVEM ser frases curtas de 4 a 10 palavras, sem justificativas ou explicações.
 6. 1 CORRETA E 3 INCORRETAS INDISCUTÍVEIS: A alternativa correta deve ser categoricamente verdadeira e as 3 incorretas categoricamente falsas no contexto técnico.
 
