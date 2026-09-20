@@ -150,7 +150,6 @@ export default {
     },
     replaceState() {
       this.$store.replaceState({
-        chartData: CHART_DEFAULT_DATA,
         callHelp: "",
       });
       this.$router.push("/");

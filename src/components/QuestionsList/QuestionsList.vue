@@ -214,6 +214,11 @@ export default {
       this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
     },
+    replaceState() {
+      this.$store.replaceState({
+        callHelp: "",
+      });
+    },
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
 };
