@@ -7,3 +7,12 @@
   white-space: normal !important;
   word-break: break-word;
 }
+
+.choice-card {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.choice-card:hover {
+  background-color: #e0e0e0 !important;
+}

@@ -36,7 +36,7 @@
         </span>
       </v-avatar>
 
-      <!-- Alternativa Selecionada -->
+      <!-- Alternativa Selecionada (Mantém mesmo tamanho e cor de texto) -->
       <v-hover v-if="choice === i" v-slot="{ hover }">
         <v-card
           rounded-8
@@ -47,7 +47,7 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1 white--text text-wrap">
+              <v-list-item-title class="title mb-1 text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
             </v-list-item-content>
@@ -55,12 +55,13 @@
         </v-card>
       </v-hover>
 
-      <!-- Alternativas Disponíveis -->
+      <!-- Alternativas Disponíveis com efeito Hover aprimorado -->
       <v-hover v-else v-slot="{ hover }">
         <v-card
           rounded-8
           width="calc(100% - 80px)"
           outlined
+          class="choice-card"
           :elevation="hover ? 12 : 2"
           @click="handleAnswers(i)"
         >
@@ -172,7 +173,6 @@ export default {
       }
     },
     isButtonDisabled(btn) {
-      // Se for a última pergunta, força o botão do Gepeto a ficar desabilitado
       if (btn.id === "btn-gepeto" && this.isLastQuestion) {
         return true;
       }
