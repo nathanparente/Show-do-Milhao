@@ -9,13 +9,11 @@ export const GAME_CONFIG = Object.freeze({
   TEMPERATURE: 0.4,
 
   GET_PROMPT: (temas, quantidade) => {
-    // Cálculo dos intervalos em porcentagem
     const easyEnd = Math.floor(quantidade * 0.5);
     const mediumStart = easyEnd + 1;
     const mediumEnd = Math.floor(quantidade * 0.8);
     const hardStart = mediumEnd + 1;
 
-    // Regras dinâmicas de exibição dos intervalos
     const easyRangeText =
       easyEnd === 1 ? "Pergunta 1" : `Perguntas 1 até ${easyEnd}`;
     const mediumRangeText =
@@ -33,31 +31,34 @@ Crie exatas ${quantidade} perguntas de múltipla escolha sobre os temas: ${temas
       ", "
     )}.
 
-CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM (OBRIGATÓRIO PARA AS ${quantidade} PERGUNTAS):
-- ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais, definições diretas e sintaxe basilar.
-- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Boas práticas, cenários práticos intermediários e resolução de problemas cotidianos.
-- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Análise de arquitetura avançada, diagnósticos em produção, métricas complexas e trade-offs críticos.
+Foque em conceitos, padrões de arquitetura e boas práticas consolidadas do mercado de tecnologia.
 
-DIRETRIZES DE CONTEÚDO:
-1. Respeite rigidamente a transição de dificuldade entre os blocos definidos.
-2. Todas as perguntas devem contextualizar um cenário vivido por profissionais de tecnologia.
-3. As alternativas incorretas devem ser plausíveis e conter "pegadinhas" técnicas legítimas.
+CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM (OBRIGATÓRIO PARA AS ${quantidade} PERGUNTAS):
+- ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais e definições diretas.
+- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Boas práticas e cenários práticos intermediários.
+- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Arquitetura avançada, diagnósticos e trade-offs complexos.
+
+REGRA CRÍTICA DE CONCISÃO DAS ALTERNATIVAS (OBRIGATÓRIO):
+1. FRASES CURTAS: TODAS as 4 alternativas (1 correta e 3 incorretas) DEVEM ser frases diretas de no máximo 4 a 6 palavras.
+2. PROIBIDO EXPLICAR: NUNCA crie respostas longas, justificativas ou frases com mais de uma oração.
+3. SIMETRIA PERFEITA: A alternativa correta DEVE ter o mesmo tamanho e estilo direto das alternativas incorretas.
+4. DISTRATORES VEROSÍMEIS: As opções incorretas devem usar termos técnicos reais, porém incorretos para o contexto.
 
 REGRAS ESTREITAS DE FORMATO:
-1. "correta": O TEXTO COMPLETO e detalhado da resposta certa. NUNCA coloque apenas letras (A, B, C, D).
-2. "incorretas": Array com EXATAMENTE 3 alternativas erradas.
+1. "correta": Texto puro e curto da alternativa certa. NUNCA coloque apenas letras (A, B, C, D).
+2. "incorretas": Array com EXATAMENTE 3 alternativas erradas e curtas.
 3. PROIBIDO colocar prefixos como "A)", "B)", "1." ou letras no início das respostas.
 
-Siga estritamente este exemplo de formato JSON:
+Siga estritamente este exemplo de formato e tamanho curto de alternativas:
 {
   "perguntas": [
     {
-      "pergunta": "Durante um teste A/B no fluxo de pagamento, a variação B apresentou maior CTR no botão, mas menor taxa de finalização de compra. Qual viés ou métrica explica melhor esse comportamento?",
-      "correta": "Efeito de atrito de intenção, onde o design facilitou o clique acidental sem qualificar o usuário para a compra.",
+      "pergunta": "Qual é a principal característica visual do padrão Material Design do Google?",
+      "correta": "Profundidade por sombras e iluminação.",
       "incorretas": [
-        "Aumento da taxa de rejeição causado exclusivamente por falha no carregamento do script de CRO.",
-        "Erro de amostragem estatística resultante de uma divisão de tráfego de 50/50.",
-        "Incompatibilidade nativa de CSS Grid em dispositivos móveis modernos."
+        "Eliminação de sombras em telas planas.",
+        "Texturas estritas do mundo real.",
+        "Foco exclusivo em tipografia sem grids."
       ]
     }
   ]
