@@ -81,4 +81,7 @@ export const UI_TEXTS = Object.freeze({
     "Agora é a hora de contar com a força da amizade,<br /> pergunte para seus amigos se eles sabem",
   HELP_CARTAS_INSTRUCTION:
     "Escolha uma carta para revelar quantas alternativas erradas serão eliminadas:",
+  HELP_CARTAS_NONE: "Nenhuma alternativa errada foi eliminada!",
+  HELP_CARTAS_ONE_OPTION: "1 alternativa errada foi eliminada.",
+  HELP_CARTAS_SELECTED_OPTIONS: "alternativas erradas foram eliminadas.",
 });
