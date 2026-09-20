@@ -11,7 +11,7 @@
       >
         <v-btn
           :id="btn.id"
-          :disabled="btn.isDisabled"
+          :disabled="isButtonDisabled(btn)"
           large
           fab
           color="white"
@@ -66,7 +66,7 @@
         >
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="headline mb-1 text-wrap">
+              <v-list-item-title class="title mb-1 text-wrap">
                 {{ item.answer }}
               </v-list-item-title>
             </v-list-item-content>
@@ -142,6 +142,13 @@ export default {
       }
       return null;
     },
+    isLastQuestion() {
+      return (
+        Array.isArray(this.questions) &&
+        this.questions.length > 0 &&
+        this.currentIndex === this.questions.length - 1
+      );
+    },
   },
   watch: {
     "$route.params.questionId"() {
@@ -164,7 +171,16 @@ export default {
         this.choices = [...this.currentQuestion.choices];
       }
     },
+    isButtonDisabled(btn) {
+      // Se for a última pergunta, força o botão do Gepeto a ficar desabilitado
+      if (btn.id === "btn-gepeto" && this.isLastQuestion) {
+        return true;
+      }
+      return btn.isDisabled;
+    },
     handleHelp(id, index) {
+      if (this.isButtonDisabled(this.buttons[index])) return;
+
       if (id === "btn-cartas") {
         this.getCartasHelp(index);
       } else if (id === "btn-gepeto") {
@@ -220,19 +236,13 @@ export default {
     },
     removeWrongChoices(count) {
       if (!this.currentQuestion || !this.choices) return;
-
       const wrongChoices = this.choices.filter((item) => !item.isTrue);
-
-      // O número 4 não elimina nenhuma alternativa (assim como o Rei no jogo original)
       const numToRemove =
         count === 4 ? 0 : Math.min(count, wrongChoices.length);
-
       if (numToRemove === 0) return;
 
-      // Seleciona aleatoriamente quais incorretas remover
       const shuffledWrong = [...wrongChoices].sort(() => Math.random() - 0.5);
       const wrongToKeep = shuffledWrong.slice(numToRemove);
-
       this.choices = this.choices.filter(
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
