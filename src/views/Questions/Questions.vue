@@ -79,6 +79,10 @@ export default {
     async gerarPerguntasComIA() {
       this.isLoading = true;
       try {
+        const activeThemes = this.$route.query.themes
+          ? this.$route.query.themes.split(",")
+          : GAME_CONFIG.THEMES;
+
         const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -88,10 +92,10 @@ export default {
             stream: false,
             options: {
               temperature: GAME_CONFIG.TEMPERATURE,
-              num_ctx: 4096, // Aumenta a janela de contexto para suportar respostas mais elaboradas
+              num_ctx: 4096,
             },
             prompt: GAME_CONFIG.GET_PROMPT(
-              GAME_CONFIG.THEMES,
+              activeThemes,
               GAME_CONFIG.TOTAL_QUESTIONS
             ),
           }),

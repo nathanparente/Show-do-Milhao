@@ -14,6 +14,11 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/themes",
+    name: "Themes",
+    component: () => import("@/views/Themes/Themes.vue"),
+  },
+  {
     path: "/questions/:questionId",
     name: "questions",
     component: load("Questions"),
