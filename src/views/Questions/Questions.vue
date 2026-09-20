@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <div class="home app-bg-color fill-height">
-      <!-- Botão Voltar/Home -->
       <section>
         <v-row class="mt-10 ml-10" justify="start" align="start">
           <v-btn large fab color="white" @click="replaceState">
@@ -10,17 +9,21 @@
         </v-row>
       </section>
 
-      <!-- Conteúdo do Jogo -->
       <section>
-        <!-- ESTADO 1: Loading da IA -->
-        <v-row v-if="isLoading" justify="center" align="center" class="mt-12">
+        <v-row
+          v-if="isLoading"
+          justify="center"
+          align="center"
+          style="min-height: 70vh"
+        >
           <v-col cols="12" class="text-center white--text">
-            <v-progress-circular
-              indeterminate
-              color="white"
-              size="64"
-              class="mb-4"
-            ></v-progress-circular>
+            <v-img
+              src="@/assets/images/bg/loading-llama.gif"
+              max-width="200"
+              max-height="200"
+              contain
+              class="mx-auto mb-4"
+            ></v-img>
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
@@ -28,7 +31,6 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Jogo Ativo (Ocupando 100% da área útil central) -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
@@ -40,7 +42,6 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
@@ -93,10 +94,8 @@ export default {
             prompt: GAME_CONFIG.PROMPT,
           }),
         });
-
         const data = await response.json();
         const iaJson = JSON.parse(data.response);
-
         this.questions = iaJson.perguntas.map((itemIA, index) => {
           return this.formatarParaModeloDoJogo(itemIA, index);
         });
@@ -106,12 +105,10 @@ export default {
         this.isLoading = false;
       }
     },
-
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
     },
-
     formatarParaModeloDoJogo(itemIA, idIndex) {
       let choices = [
         {
@@ -143,9 +140,7 @@ export default {
           probability: 5,
         },
       ];
-
       choices = choices.sort(() => Math.random() - 0.5);
-
       return {
         id: idIndex,
         question: itemIA.pergunta,
@@ -153,7 +148,6 @@ export default {
         choices: choices,
       };
     },
-
     replaceState() {
       this.$store.replaceState({
         chartData: CHART_DEFAULT_DATA,

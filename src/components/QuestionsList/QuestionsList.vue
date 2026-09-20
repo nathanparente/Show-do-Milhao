@@ -87,6 +87,7 @@
 
 <script>
 import { mapMutations } from "vuex";
+import { UI_TEXTS } from "@/constants/gameConfig";
 
 export default {
   name: "QuestionsList",
@@ -104,6 +105,7 @@ export default {
     return {
       dialog: false,
       alternatives: ["A", "B", "C", "D"],
+      uiTexts: UI_TEXTS,
       buttons: [
         {
           id: "btn-fifty",
@@ -188,9 +190,7 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        alert(
-          "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!"
-        );
+        alert(this.uiTexts.WIN_MESSAGE);
         this.replaceState();
         this.$router.push("/");
       }
@@ -213,18 +213,6 @@ export default {
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
-    },
-    replaceState() {
-      this.$store.replaceState({
-        chartData: [
-          ["Alternativas", "Porcentagem de votos da platéia"],
-          ["A", 0],
-          ["B", 0],
-          ["C", 0],
-          ["D", 0],
-        ],
-        callHelp: "",
-      });
     },
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },

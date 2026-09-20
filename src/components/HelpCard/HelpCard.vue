@@ -9,14 +9,15 @@
       <v-card-text class="help-card-container">
         <!-- Exibição da ajuda do Gepeto -->
         <p v-if="callHelp === 'gepeto'" class="friend-help-text">
-          Busque a resposta no GPT
+          {{ uiTexts.HELP_GEPETO }}
         </p>
 
         <!-- Exibição da ajuda dos Universitários -->
-        <p v-else-if="callHelp === 'universitarios'" class="friend-help-text">
-          Agora é a hora de contar com a força da amizade,<br />
-          pergunte para seus amigos se eles sabem
-        </p>
+        <p
+          v-else-if="callHelp === 'universitarios'"
+          class="friend-help-text"
+          v-html="uiTexts.HELP_UNIVERSITARIOS"
+        ></p>
       </v-card-text>
 
       <v-card-actions>
@@ -31,9 +32,15 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
+import { UI_TEXTS } from "@/constants/gameConfig";
 
 export default {
   name: "HelpCard",
+  data() {
+    return {
+      uiTexts: UI_TEXTS,
+    };
+  },
   computed: {
     ...mapState({
       callHelp: (state) => state.callHelp,
