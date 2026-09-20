@@ -207,7 +207,18 @@ export default {
       this.buttons[index].isDisabled = true;
     },
     getGepetoHelp(index) {
-      this.updateCallHelp("gepeto");
+      if (!this.currentQuestion) return;
+
+      // Busca a alternativa correta dentro da pergunta atual
+      const respostaCorreta = this.currentQuestion.choices.find(
+        (item) => item.isTrue
+      );
+
+      this.updateCallHelp({
+        type: "gepeto",
+        answer: respostaCorreta ? respostaCorreta.answer : "",
+      });
+
       this.buttons[index].isDisabled = true;
     },
     getUniversitariosHelp(index) {

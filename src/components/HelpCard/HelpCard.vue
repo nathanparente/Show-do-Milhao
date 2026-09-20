@@ -7,14 +7,15 @@
       </v-card-title>
 
       <v-card-text class="help-card-container">
-        <!-- Exibição da ajuda do Gepeto -->
-        <p v-if="callHelp === 'gepeto'" class="friend-help-text">
-          {{ uiTexts.HELP_GEPETO }}
-        </p>
+        <div v-if="helpType === 'gepeto'">
+          <p class="friend-help-text mb-2">
+            {{ uiTexts.HELP_GEPETO }}
+          </p>
+          <p class="gepeto-answer-text">"{{ gepetoAnswer }}"</p>
+        </div>
 
-        <!-- Exibição da ajuda dos Universitários -->
         <p
-          v-else-if="callHelp === 'universitarios'"
+          v-else-if="helpType === 'universitarios'"
           class="friend-help-text"
           v-html="uiTexts.HELP_UNIVERSITARIOS"
         ></p>
@@ -45,8 +46,20 @@ export default {
     ...mapState({
       callHelp: (state) => state.callHelp,
     }),
+    helpType() {
+      if (typeof this.callHelp === "object" && this.callHelp !== null) {
+        return this.callHelp.type;
+      }
+      return this.callHelp;
+    },
+    gepetoAnswer() {
+      if (typeof this.callHelp === "object" && this.callHelp !== null) {
+        return this.callHelp.answer || "";
+      }
+      return "";
+    },
     showDialog() {
-      return this.callHelp === "gepeto" || this.callHelp === "universitarios";
+      return this.helpType === "gepeto" || this.helpType === "universitarios";
     },
   },
   methods: {

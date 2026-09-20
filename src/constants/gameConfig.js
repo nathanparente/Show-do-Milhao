@@ -39,7 +39,7 @@ export const UI_TEXTS = Object.freeze({
   ERROR_BUTTON: "Tentar Novamente",
   WIN_MESSAGE:
     "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!",
-  HELP_GEPETO: "Busque a resposta no GPT",
+  HELP_GEPETO: "Segundo o Gepeto nossa IA que nunca mente ...",
   HELP_UNIVERSITARIOS:
     "Agora é a hora de contar com a força da amizade,<br /> pergunte para seus amigos se eles sabem",
 });

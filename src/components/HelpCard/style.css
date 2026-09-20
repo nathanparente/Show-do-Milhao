@@ -33,3 +33,11 @@
   font-weight: 700;
   letter-spacing: 0.5px;
 }
+
+.gepeto-answer-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-top: 12px !important;
+  word-break: break-word;
+}
