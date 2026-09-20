@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <div class="home app-bg-color fill-height">
+      <!-- Botão Voltar/Home -->
       <section>
         <v-row class="mt-10 ml-10" justify="start" align="start">
           <v-btn large fab color="white" @click="replaceState">
@@ -9,7 +10,9 @@
         </v-row>
       </section>
 
+      <!-- Conteúdo do Jogo -->
       <section>
+        <!-- ESTADO 1: Loading da IA -->
         <v-row
           v-if="isLoading"
           justify="center"
@@ -24,13 +27,25 @@
               contain
               class="mx-auto mb-4"
             ></v-img>
+
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
-            <p class="subtitle-1">{{ uiTexts.LOADING_SUBTITLE }}</p>
+
+            <!-- BARRA DE PROGRESSO BASEADA EM TEMPO DE EXECUÇÃO -->
+            <div class="progress-container mx-auto">
+              <div class="progress-fill" :style="{ width: progress + '%' }">
+                <span v-if="progress > 10" class="progress-text">
+                  {{ Math.floor(progress) }}%
+                </span>
+              </div>
+            </div>
+
+            <p class="subtitle-1 mb-6">{{ uiTexts.LOADING_SUBTITLE }}</p>
           </v-col>
         </v-row>
 
+        <!-- ESTADO 2: Jogo Ativo -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
@@ -42,6 +57,7 @@
           </v-col>
         </v-row>
 
+        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
@@ -69,20 +85,62 @@ export default {
     return {
       questions: [],
       isLoading: true,
+      progress: 0,
+      animationFrameId: null,
       uiTexts: UI_TEXTS,
     };
   },
   async created() {
     await this.gerarPerguntasComIA();
   },
+  beforeDestroy() {
+    this.stopTimeProgress();
+  },
   methods: {
+    startTimeProgress(totalQuestions) {
+      this.stopTimeProgress();
+      this.progress = 0;
+
+      const startTime = performance.now();
+      const estimatedTotalMs = totalQuestions * 2500;
+
+      const updateProgress = () => {
+        const elapsedMs = performance.now() - startTime;
+
+        if (elapsedMs <= estimatedTotalMs) {
+          this.progress = (elapsedMs / estimatedTotalMs) * 90;
+        } else {
+          const extraTimeMs = elapsedMs - estimatedTotalMs;
+          this.progress = 90 + (1 - Math.exp(-extraTimeMs / 6000)) * 8;
+        }
+
+        if (this.isLoading && this.progress < 99) {
+          this.animationFrameId = requestAnimationFrame(updateProgress);
+        }
+      };
+
+      this.animationFrameId = requestAnimationFrame(updateProgress);
+    },
+
+    stopTimeProgress() {
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    },
+
     async gerarPerguntasComIA() {
       this.isLoading = true;
-      try {
-        const activeThemes = this.$route.query.themes
-          ? this.$route.query.themes.split(",")
-          : GAME_CONFIG.THEMES;
 
+      const activeThemes = this.$route.query.themes
+        ? this.$route.query.themes.split(",")
+        : GAME_CONFIG.THEMES;
+
+      const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
+
+      this.startTimeProgress(totalQuestions);
+
+      try {
         const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -94,10 +152,7 @@ export default {
               temperature: GAME_CONFIG.TEMPERATURE,
               num_ctx: 4096,
             },
-            prompt: GAME_CONFIG.GET_PROMPT(
-              activeThemes,
-              GAME_CONFIG.TOTAL_QUESTIONS
-            ),
+            prompt: GAME_CONFIG.GET_PROMPT(activeThemes, totalQuestions),
           }),
         });
 
@@ -107,8 +162,14 @@ export default {
         this.questions = iaJson.perguntas.map((itemIA, index) => {
           return this.formatarParaModeloDoJogo(itemIA, index);
         });
+
+        this.stopTimeProgress();
+        this.progress = 100;
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
       } catch (error) {
         console.error("Erro ao gerar perguntas com IA:", error);
+        this.stopTimeProgress();
       } finally {
         this.isLoading = false;
       }
@@ -170,3 +231,32 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.progress-container {
+  width: 100%;
+  max-width: 420px;
+  height: 32px;
+  background-color: #ffffff;
+  padding: 4px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #012f6d;
+  border-radius: 12px;
+  transition: width 0.1s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-text {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+}
+</style>

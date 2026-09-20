@@ -6,16 +6,14 @@ export const GAME_CONFIG = Object.freeze({
   THEMES,
   OLLAMA_URL: "http://localhost:11434/api/generate",
   MODEL_NAME: "llama3",
-  TEMPERATURE: 0.4,
+  TEMPERATURE: 0.3, // Reduzido para 0.3 para ser mais determinístico e factual
 
   GET_PROMPT: (temas, quantidade) => {
-    // Cálculo dos intervalos em porcentagem
     const easyEnd = Math.floor(quantidade * 0.5);
     const mediumStart = easyEnd + 1;
     const mediumEnd = Math.floor(quantidade * 0.8);
     const hardStart = mediumEnd + 1;
 
-    // Regras dinâmicas de exibição dos intervalos
     const easyRangeText =
       easyEnd === 1 ? "Pergunta 1" : `Perguntas 1 até ${easyEnd}`;
     const mediumRangeText =
@@ -28,36 +26,57 @@ export const GAME_CONFIG = Object.freeze({
         : `Perguntas ${hardStart} até ${quantidade}`;
 
     return `
-Você é um Arquiteto de Software Sênior e Especialista em UI/UX/CRO criando um desafio técnico de alto nível.
+Você é um Arquiteto de Software Sênior e Especialista em UI/UX/CRO criando um quiz técnico de precisão absoluta.
 Crie exatas ${quantidade} perguntas de múltipla escolha sobre os temas: ${temas.join(
       ", "
     )}.
 
-CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM (OBRIGATÓRIO PARA AS ${quantidade} PERGUNTAS):
-- ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais, definições diretas e sintaxe basilar.
-- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Boas práticas, cenários práticos intermediários e resolução de problemas cotidianos.
-- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Análise de arquitetura avançada, diagnósticos em produção, métricas complexas e trade-offs críticos.
+CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM:
+- ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais e definições diretas.
+- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Sintaxe, padrões técnicos e boas práticas.
+- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Diagnósticos avançados em produção, comportamento de código, especificações formais e trade-offs críticos.
 
-DIRETRIZES DE CONTEÚDO:
-1. Respeite rigidamente a transição de dificuldade entre os blocos definidos.
-2. Todas as perguntas devem contextualizar um cenário vivido por profissionais de tecnologia.
-3. As alternativas incorretas devem ser plausíveis e conter "pegadinhas" técnicas legítimas.
+REGRAS DE OURO PARA EVITAR ERROS E AMBIGUIDADE (OBRIGATÓRIO):
+1. PROIBIDO SUBJETIVIDADE E SUPERLATIVOS: É ESTRITAMENTE PROIBIDO fazer perguntas contendo palavras como "mais comum", "mais eficaz", "melhor", "mais importante", "ideal" ou "principal".
+2. APENAS FATOS DETERMINÍSTICOS: As perguntas devem ser baseadas em fatos técnicos inquestionáveis (ex: "Qual cabeçalho HTTP é usado para...", "Qual método do evento impede o comportamento padrão no JS...", "O que significa a sigla...").
+3. APENAS TEXTO PORTUGUÊS PT-BR: Todos os textos devem estar em português correto
+4. TERMOS TÉCNICOS EM INGLÊS (en): Todos os termos técnicos como Cache, User-Agent, Framework, Hydratation, Schema, Layout, Dataset e entre outros devem ser em inglês.
+5. ALTERNATIVAS SIMÉTRICAS E CURTAS: Todas as 4 alternativas DEVEM ser frases curtas de 4 a 10 palavras, sem justificativas ou explicações.
+6. 1 CORRETA E 3 INCORRETAS INDISCUTÍVEIS: A alternativa correta deve ser categoricamente verdadeira e as 3 incorretas categoricamente falsas no contexto técnico.
 
-REGRAS ESTREITAS DE FORMATO:
-1. "correta": O TEXTO COMPLETO e detalhado da resposta certa. NUNCA coloque apenas letras (A, B, C, D).
-2. "incorretas": Array com EXATAMENTE 3 alternativas erradas.
-3. PROIBIDO colocar prefixos como "A)", "B)", "1." ou letras no início das respostas.
+REGRAS DE FORMATO:
+1. "correta": Texto puro e curto da alternativa certa. NUNCA coloque letras (A, B, C, D).
+2. "incorretas": Array com EXATAMENTE 3 alternativas erradas e curtas.
+3. PROIBIDO prefixos como "A)", "B)", "1.".
 
-Siga estritamente este exemplo de formato JSON:
+Siga rigorosamente este formato JSON com exemplos para os três temas:
 {
   "perguntas": [
     {
-      "pergunta": "Durante um teste A/B no fluxo de pagamento, a variação B apresentou maior CTR no botão, mas menor taxa de finalização de compra. Qual viés ou métrica explica melhor esse comportamento?",
-      "correta": "Efeito de atrito de intenção, onde o design facilitou o clique acidental sem qualificar o usuário para a compra.",
+      "pergunta": "Qual método do JavaScript cancela o comportamento padrão de um evento sem interromper sua propagação?",
+      "correta": "Uso do método event.preventDefault()",
       "incorretas": [
-        "Aumento da taxa de rejeição causado exclusivamente por falha no carregamento do script de CRO.",
-        "Erro de amostragem estatística resultante de uma divisão de tráfego de 50/50.",
-        "Incompatibilidade nativa de CSS Grid em dispositivos móveis modernos."
+        "Uso do método event.stopPropagation()",
+        "Uso do método event.stopImmediatePropagation()",
+        "Uso da propriedade event.cancelBubble"
+      ]
+    },
+    {
+      "pergunta": "Qual é a razão de contraste mínima exigida pelas diretrizes WCAG 2.1 no nível AA para texto normal?",
+      "correta": "Razão de contraste mínima de 4.5:1",
+      "incorretas": [
+        "Razão de contraste mínima de 3.0:1",
+        "Razão de contraste mínima de 7.0:1",
+        "Razão de contraste mínima de 2.1:1"
+      ]
+    },
+    {
+      "pergunta": "Qual valor de p (p-value) é utilizado para comprovar estatisticamente 95% de confiança em um teste A/B?",
+      "correta": "Valor de p inferior a 0.05",
+      "incorretas": [
+        "Valor de p inferior a 0.50",
+        "Valor de p superior a 0.95",
+        "Valor de p igual a 1.00"
       ]
     }
   ]
@@ -81,4 +100,7 @@ export const UI_TEXTS = Object.freeze({
     "Agora é a hora de contar com a força da amizade,<br /> pergunte para seus amigos se eles sabem",
   HELP_CARTAS_INSTRUCTION:
     "Escolha uma carta para revelar quantas alternativas erradas serão eliminadas:",
+  HELP_CARTAS_NONE: "Nenhuma alternativa errada foi eliminada!",
+  HELP_CARTAS_ONE_OPTION: "1 alternativa errada foi eliminada.",
+  HELP_CARTAS_SELECTED_OPTIONS: "alternativas erradas foram eliminadas.",
 });
