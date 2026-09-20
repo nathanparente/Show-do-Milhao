@@ -42,12 +42,9 @@ export const UI_TEXTS = Object.freeze({
   HELP_GEPETO: "Segundo o Gepeto nossa IA que nunca mente ...",
   HELP_UNIVERSITARIOS:
     "Agora é a hora de contar com a força da amizade,<br /> pergunte para seus amigos se eles sabem",
+  HELP_CARTAS_INSTRUCTION:
+    "Escolha uma carta para revelar quantas alternativas erradas serão eliminadas:",
+  HELP_CARTAS_NONE: "Nenhuma alternativa errada foi eliminada!",
+  HELP_CARTAS_ONE_OPTION: "1 alternativa errada foi eliminada.",
+  HELP_CARTAS_SELECTED_OPTIONS: "alternativas erradas foram eliminadas.",
 });
-
-export const CHART_DEFAULT_DATA = Object.freeze([
-  ["Alternativas", "Porcentagem de votos da platéia"],
-  ["A", 0],
-  ["B", 0],
-  ["C", 0],
-  ["D", 0],
-]);

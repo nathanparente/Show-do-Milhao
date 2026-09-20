@@ -57,11 +57,7 @@
 </template>
 
 <script>
-import {
-  GAME_CONFIG,
-  UI_TEXTS,
-  CHART_DEFAULT_DATA,
-} from "@/constants/gameConfig";
+import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
 
 export default {
   name: "Questions",

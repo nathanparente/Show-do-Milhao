@@ -17,7 +17,7 @@
           color="white"
           @click="handleHelp(btn.id, index)"
         >
-          <v-icon>{{ btn.icon }}</v-icon>
+          <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -80,7 +80,7 @@
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
     />
-    <HelpCard />
+    <HelpCard @apply-cartas="removeWrongChoices" />
   </section>
   <!-- END FIRST SECTION -->
 </template>
@@ -108,9 +108,9 @@ export default {
       uiTexts: UI_TEXTS,
       buttons: [
         {
-          id: "btn-fifty",
-          title: "50/50",
-          icon: "mdi-circle-half-full",
+          id: "btn-cartas",
+          title: "Cartas",
+          icon: "mdi-cards-spade",
           isDisabled: false,
         },
         {
@@ -165,8 +165,8 @@ export default {
       }
     },
     handleHelp(id, index) {
-      if (id === "btn-fifty") {
-        this.getHalf(index);
+      if (id === "btn-cartas") {
+        this.getCartasHelp(index);
       } else if (id === "btn-gepeto") {
         this.getGepetoHelp(index);
       } else if (id === "btn-universitarios") {
@@ -199,31 +199,43 @@ export default {
       this.replaceState();
       this.dialog = true;
     },
-    getHalf(index) {
-      if (!this.currentQuestion) return;
-      this.choices = this.currentQuestion.choices.filter(
-        (item) => item.isOnHalf
-      );
+    getCartasHelp(index) {
+      this.updateCallHelp("cartas");
       this.buttons[index].isDisabled = true;
     },
     getGepetoHelp(index) {
       if (!this.currentQuestion) return;
-
-      // Busca a alternativa correta dentro da pergunta atual
       const respostaCorreta = this.currentQuestion.choices.find(
         (item) => item.isTrue
       );
-
       this.updateCallHelp({
         type: "gepeto",
         answer: respostaCorreta ? respostaCorreta.answer : "",
       });
-
       this.buttons[index].isDisabled = true;
     },
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
+    },
+    removeWrongChoices(count) {
+      if (!this.currentQuestion || !this.choices) return;
+
+      const wrongChoices = this.choices.filter((item) => !item.isTrue);
+
+      // O número 4 não elimina nenhuma alternativa (assim como o Rei no jogo original)
+      const numToRemove =
+        count === 4 ? 0 : Math.min(count, wrongChoices.length);
+
+      if (numToRemove === 0) return;
+
+      // Seleciona aleatoriamente quais incorretas remover
+      const shuffledWrong = [...wrongChoices].sort(() => Math.random() - 0.5);
+      const wrongToKeep = shuffledWrong.slice(numToRemove);
+
+      this.choices = this.choices.filter(
+        (item) => item.isTrue || wrongToKeep.includes(item)
+      );
     },
     replaceState() {
       this.$store.replaceState({

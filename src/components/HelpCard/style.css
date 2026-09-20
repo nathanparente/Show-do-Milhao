@@ -29,15 +29,42 @@
   word-break: break-word;
 }
 
-.modal-btn {
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
 .gepeto-answer-text {
   font-size: 22px;
   font-weight: 700;
   color: #2e7d32;
   margin-top: 12px !important;
   word-break: break-word;
+}
+
+.card-suit-btn {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-suit-btn:hover {
+  transform: translateY(-4px);
+}
+
+.card-suit-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #333;
+}
+
+.cartas-result-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1976d2;
+  margin-top: 16px !important;
+}
+
+.modal-btn {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.w-100 {
+  width: 100%;
 }
