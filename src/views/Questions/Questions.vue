@@ -100,10 +100,8 @@ export default {
             ),
           }),
         });
-
         const data = await response.json();
         const iaJson = JSON.parse(data.response);
-
         this.questions = iaJson.perguntas.map((itemIA, index) => {
           return this.formatarParaModeloDoJogo(itemIA, index);
         });
@@ -113,12 +111,10 @@ export default {
         this.isLoading = false;
       }
     },
-
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
     },
-
     formatarParaModeloDoJogo(itemIA, idIndex) {
       let choices = [
         {
@@ -150,9 +146,7 @@ export default {
           probability: 5,
         },
       ];
-
       choices = choices.sort(() => Math.random() - 0.5);
-
       return {
         id: idIndex,
         question: itemIA.pergunta,
@@ -160,7 +154,6 @@ export default {
         choices: choices,
       };
     },
-
     replaceState() {
       this.$store.replaceState({
         callHelp: "",
