@@ -35,9 +35,9 @@ Diferente das versões com banco de dados estático, este projeto consome a **LL
 ## ✨ Funcionalidades
 
 - **Perguntas Dinâmicas com IA:** Geração sem necessidade de APIs pagas ou chaves de acesso.
-- **Ajuda 50/50:** Elimina metade das alternativas incorretas da tela.
-- **Chamada de Ajuda:** Sugere a alternativa correta com base no processamento da IA.
-- **Gráfico da Platéia:** Simula a porcentagem de votos do público para cada alternativa.
+- **Cartas:** Uma seleção aleatória entre 1 a 4 que elimina alternativas erradas dependendo da seleção do usuário.
+- **Gepeto:** Exibe a resposta correta com a ajuda da IA.
+- **Universitários:** Solicita que o jogador peça ajuda de amigos para achar a resposta certa.
 
 ---
 
