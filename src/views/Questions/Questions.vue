@@ -193,10 +193,8 @@ export default {
             prompt: GAME_CONFIG.GET_PROMPT(activeThemes, totalQuestions),
           }),
         });
-
         const data = await response.json();
         const iaJson = JSON.parse(data.response);
-
         this.questions = iaJson.perguntas.map((itemIA, index) => {
           return this.formatarParaModeloDoJogo(itemIA, index);
         });
@@ -246,9 +244,7 @@ export default {
           probability: 5,
         },
       ];
-
       choices = choices.sort(() => Math.random() - 0.5);
-
       return {
         id: idIndex,
         question: itemIA.pergunta,
