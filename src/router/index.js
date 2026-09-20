@@ -25,9 +25,12 @@ const routes = [
   },
   {
     path: "/questions",
-    redirect: (to) => {
-      return "/questions/1";
-    },
+    redirect: () => "/questions/1",
+  },
+  {
+    path: "/victory",
+    name: "victory",
+    component: load("Victory"),
   },
 ];
 

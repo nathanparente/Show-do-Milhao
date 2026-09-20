@@ -22,6 +22,10 @@ body {
   background-color: #012f6d;
 }
 
+.app-victory-bg-color {
+  background-color: #0d3264;
+}
+
 h1 {
   display: block;
   font-size: 2em;

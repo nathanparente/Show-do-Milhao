@@ -1,0 +1,26 @@
+.victory-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.win-message {
+  font-size: 28px !important;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.4;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.btn-restart {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #012f6d !important;
+  text-transform: none !important;
+  padding: 12px 36px !important;
+  border-radius: 28px !important;
+}

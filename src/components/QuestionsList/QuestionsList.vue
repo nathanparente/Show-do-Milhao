@@ -206,9 +206,8 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        alert(this.uiTexts.WIN_MESSAGE);
         this.replaceState();
-        this.$router.push("/");
+        this.$router.push("/victory");
       }
     },
     wrongQuestion() {
