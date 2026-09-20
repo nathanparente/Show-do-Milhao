@@ -6,7 +6,7 @@ export const GAME_CONFIG = Object.freeze({
   THEMES,
   OLLAMA_URL: "http://localhost:11434/api/generate",
   MODEL_NAME: "llama3",
-  TEMPERATURE: 0.4,
+  TEMPERATURE: 0.3, // Reduzido para 0.3 para ser mais determinístico e factual
 
   GET_PROMPT: (temas, quantidade) => {
     const easyEnd = Math.floor(quantidade * 0.5);
@@ -26,39 +26,57 @@ export const GAME_CONFIG = Object.freeze({
         : `Perguntas ${hardStart} até ${quantidade}`;
 
     return `
-Você é um Arquiteto de Software Sênior e Especialista em UI/UX/CRO criando um desafio técnico de alto nível.
+Você é um Arquiteto de Software Sênior criando um quiz técnico de precisão absoluta.
 Crie exatas ${quantidade} perguntas de múltipla escolha sobre os temas: ${temas.join(
       ", "
     )}.
 
-Foque em conceitos, padrões de arquitetura e boas práticas consolidadas do mercado de tecnologia.
-
-CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM (OBRIGATÓRIO PARA AS ${quantidade} PERGUNTAS):
+CURVA DE DIFICULDADE PROGRESSIVA POR PORCENTAGEM:
 - ${easyRangeText} (0% a 50% - NÍVEL FÁCIL): Conceitos fundamentais e definições diretas.
-- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Boas práticas e cenários práticos intermediários.
-- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Arquitetura avançada, diagnósticos e trade-offs complexos.
+- ${mediumRangeText} (50% a 80% - NÍVEL MÉDIO): Sintaxe, mecanismos de protocolos e padrões técnicos.
+- ${hardRangeText} (80% a 100% - NÍVEL DIFÍCIL/ESPECIALISTA): Diagnósticos avançados, comportamento de código e especificações formais.
 
-REGRA CRÍTICA DE CONCISÃO DAS ALTERNATIVAS (OBRIGATÓRIO):
-1. FRASES CURTAS: TODAS as 4 alternativas (1 correta e 3 incorretas) DEVEM ser frases diretas de no máximo 4 a 6 palavras.
-2. PROIBIDO EXPLICAR: NUNCA crie respostas longas, justificativas ou frases com mais de uma oração.
-3. SIMETRIA PERFEITA: A alternativa correta DEVE ter o mesmo tamanho e estilo direto das alternativas incorretas.
-4. DISTRATORES VEROSÍMEIS: As opções incorretas devem usar termos técnicos reais, porém incorretos para o contexto.
+REGRAS DE OURO PARA EVITAR ERROS E AMBIGUIDADE (OBRIGATÓRIO):
+1. PROIBIDO SUBJETIVIDADE E SUPERLATIVOS: É ESTRITAMENTE PROIBIDO fazer perguntas contendo palavras como "mais comum", "mais eficaz", "melhor", "mais importante", "ideal" ou "principal".
+2. APENAS FATOS DETERMINÍSTICOS: As perguntas devem ser baseadas em fatos técnicos inquestionáveis (ex: "Qual cabeçalho HTTP é usado para...", "Qual método do evento impede o comportamento padrão no JS...", "O que significa a sigla...").
+3. APENAS TEXTO PORTUGUÊS PT-BR: Todos os textos devem estar em português correto
+4. TERMOS TÉCNICOS EM INGLÊS (en): Todos os termos técnicos como Cache, User-Agent, Framework, Hydratation, Schema, Layout, Dataset, devem ser em inglês.
+5. ALTERNATIVAS SIMÉTRICAS E CURTAS: Todas as 4 alternativas DEVEM ser frases curtas de 4 a 10 palavras, sem justificativas ou explicações.
+6. 1 CORRETA E 3 INCORRETAS INDISCUTÍVEIS: A alternativa correta deve ser categoricamente verdadeira e as 3 incorretas categoricamente falsas no contexto técnico.
 
-REGRAS ESTREITAS DE FORMATO:
-1. "correta": Texto puro e curto da alternativa certa. NUNCA coloque apenas letras (A, B, C, D).
+REGRAS DE FORMATO:
+1. "correta": Texto puro e curto da alternativa certa. NUNCA coloque letras (A, B, C, D).
 2. "incorretas": Array com EXATAMENTE 3 alternativas erradas e curtas.
-3. PROIBIDO colocar prefixos como "A)", "B)", "1." ou letras no início das respostas.
+3. PROIBIDO prefixos como "A)", "B)", "1.".
 
-Siga estritamente este exemplo de formato e tamanho curto de alternativas:
+Siga rigorosamente este formato JSON com exemplos para os três temas:
 {
   "perguntas": [
     {
-      "pergunta": "Qual é a principal característica visual do padrão Material Design do Google?",
-      "correta": "Profundidade por sombras e iluminação.",
+      "pergunta": "Qual método do JavaScript cancela o comportamento padrão de um evento sem interromper sua propagação?",
+      "correta": "Uso do método event.preventDefault()",
       "incorretas": [
-        "Eliminação de sombras em telas planas.",
-        "Texturas estritas do mundo real.",
-        "Foco exclusivo em tipografia sem grids."
+        "Uso do método event.stopPropagation()",
+        "Uso do método event.stopImmediatePropagation()",
+        "Uso da propriedade event.cancelBubble"
+      ]
+    },
+    {
+      "pergunta": "Qual é a razão de contraste mínima exigida pelas diretrizes WCAG 2.1 no nível AA para texto normal?",
+      "correta": "Razão de contraste mínima de 4.5:1",
+      "incorretas": [
+        "Razão de contraste mínima de 3.0:1",
+        "Razão de contraste mínima de 7.0:1",
+        "Razão de contraste mínima de 2.1:1"
+      ]
+    },
+    {
+      "pergunta": "Qual valor de p (p-value) é utilizado para comprovar estatisticamente 95% de confiança em um teste A/B?",
+      "correta": "Valor de p inferior a 0.05",
+      "incorretas": [
+        "Valor de p inferior a 0.50",
+        "Valor de p superior a 0.95",
+        "Valor de p igual a 1.00"
       ]
     }
   ]
