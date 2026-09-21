@@ -103,6 +103,16 @@ export default {
       choices: [],
       choice: null,
       color: "#efefef",
+
+      // ESTADOS DO PLAYOFFS
+      gameMode: localStorage.getItem("gameMode") || "",
+      player1: localStorage.getItem("player1") || "Jogador 1",
+      player2: localStorage.getItem("player2") || "Jogador 2",
+      score1: parseInt(localStorage.getItem("score1")) || 0,
+      score2: parseInt(localStorage.getItem("score2")) || 0,
+      activePlayer: parseInt(localStorage.getItem("activePlayer")) || 1,
+      p1Errored: localStorage.getItem("p1Errored") === "true",
+      p2Errored: localStorage.getItem("p2Errored") === "true",
     };
   },
   computed: {
@@ -149,6 +159,22 @@ export default {
     this.emitPlayoffsStateUpdate(); // garante que o pai receba o estado inicial ao montar
   },
   methods: {
+    initPlayoffsState() {
+      const qId = parseInt(this.$route.params.questionId) || 1;
+      if (qId === 1 && this.gameMode === "playoffs") {
+        this.score1 = 0;
+        this.score2 = 0;
+        this.activePlayer = 1;
+        this.p1Errored = false;
+        this.p2Errored = false;
+
+        localStorage.setItem("score1", "0");
+        localStorage.setItem("score2", "0");
+        localStorage.setItem("activePlayer", "1");
+        localStorage.setItem("p1Errored", "false");
+        localStorage.setItem("p2Errored", "false");
+      }
+    },
     loadQuestion() {
       this.choice = null;
       this.color = "#efefef";

@@ -211,12 +211,10 @@ export default {
         this.isLoading = false;
       }
     },
-
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
     },
-
     formatarParaModeloDoJogo(itemIA, idIndex) {
       let choices = [
         {
