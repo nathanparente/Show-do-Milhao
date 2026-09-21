@@ -2,17 +2,28 @@
   background: linear-gradient(135deg, #012f6d 0%, #0d47a1 100%);
   color: #ffffff;
 }
-
 .text-wrap {
   white-space: normal !important;
   word-break: break-word;
 }
-
 .choice-card {
   transition: background-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
 }
-
 .choice-card:hover {
   background-color: #e0e0e0 !important;
+}
+
+/* Wrapper com largura fixa para os 3 botões de ajuda */
+.help-buttons-wrapper {
+  width: 260px; /* ajuste conforme necessidade de design */
+  max-width: 260px;
+  flex: 0 0 auto;
+}
+
+/* Wrapper do botão Desistir */
+.giveup-button-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }

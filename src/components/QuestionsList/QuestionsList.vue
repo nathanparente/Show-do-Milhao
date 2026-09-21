@@ -1,102 +1,57 @@
 <template>
   <section v-if="currentQuestion">
     <v-row class="mt-3" justify="space-between" align="center">
-      <v-col
-        v-for="(btn, index) in buttons"
-        :key="btn.id"
-        justify="space-between"
-        align="center"
-      >
-        <v-btn
-          :id="btn.id"
-          :disabled="isButtonDisabled(btn)"
-          large
-          fab
-          color="white"
-          @click="handleHelp(btn.id, index)"
-        >
-          <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
-        </v-btn>
-      </v-col>
+      <HelpButtons
+        :buttons="buttons"
+        :is-last-question="isLastQuestion"
+        @help-click="onHelpClick"
+      />
+      <GiveUpButton :show="isPlayoffsMode" @give-up="handleGiveUp" />
     </v-row>
 
-    <v-row
-      v-for="(item, i) in choices"
-      :key="i"
-      class="mt-100 mx-auto mt-5 mr-10 ml-10"
-      justify="space-between"
-      align="space-between"
-    >
-      <v-avatar class="gradient" size="62">
-        <span class="headline" style="font-weight: 900">
-          {{ alternatives[i] }}
-        </span>
-      </v-avatar>
-
-      <v-hover v-if="choice === i" v-slot="{ hover }">
-        <v-card
-          rounded-8
-          width="calc(100% - 80px)"
-          :color="color"
-          outlined
-          :elevation="hover ? 12 : 2"
-        >
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title mb-1 text-wrap">
-                {{ item.answer }}
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-card>
-      </v-hover>
-
-      <v-hover v-else v-slot="{ hover }">
-        <v-card
-          rounded-8
-          width="calc(100% - 80px)"
-          outlined
-          class="choice-card"
-          :elevation="hover ? 12 : 2"
-          @click="handleAnswers(i)"
-        >
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title mb-1 text-wrap">
-                {{ item.answer }}
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-card>
-      </v-hover>
-    </v-row>
+    <ChoicesList
+      :choices="choices"
+      :choice="choice"
+      :color="color"
+      :alternatives="alternatives"
+      @select="handleAnswers"
+    />
 
     <AlertDialog
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
     />
     <HelpCard @apply-cartas="removeWrongChoices" />
-
     <TurnLostDialog
       :dialog="turnLostDialog"
       :player-name="turnLostPlayerName"
       :new-score="turnLostNewScore"
       @continue="proceedAfterTurnLost"
     />
+    <GiveUpDialog :dialog="giveUpDialog" @continue="proceedAfterGiveUp" />
   </section>
 </template>
 
 <script>
 import { mapMutations } from "vuex";
 import { UI_TEXTS } from "@/constants/gameConfig";
+import playoffsMixin from "./mixins/playoffsMixin";
+import HelpButtons from "./components/HelpButtons.vue";
+import GiveUpButton from "./components/GiveUpButton.vue";
+import ChoicesList from "./components/ChoicesList.vue";
 
 export default {
   name: "QuestionsList",
   components: {
+    HelpButtons,
+    GiveUpButton,
+    ChoicesList,
     AlertDialog: () => import("@/components/AlertDialog/AlertDialog"),
     HelpCard: () => import("@/components/HelpCard/HelpCard"),
     TurnLostDialog: () => import("@/components/TurnLostDialog/TurnLostDialog"),
+    GiveUpDialog: () => import("@/components/GiveUpDialog/GiveUpDialog"),
   },
+  mixins: [playoffsMixin],
   props: {
     questions: {
       type: [Array, Object],
@@ -109,6 +64,7 @@ export default {
       turnLostDialog: false,
       turnLostPlayerName: "",
       turnLostNewScore: 0,
+      giveUpDialog: false,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
       buttons: [
@@ -134,16 +90,6 @@ export default {
       choices: [],
       choice: null,
       color: "#efefef",
-
-      // ESTADOS DO PLAYOFFS
-      gameMode: localStorage.getItem("gameMode") || "",
-      player1: localStorage.getItem("player1") || "Jogador 1",
-      player2: localStorage.getItem("player2") || "Jogador 2",
-      score1: parseInt(localStorage.getItem("score1")) || 0,
-      score2: parseInt(localStorage.getItem("score2")) || 0,
-      activePlayer: parseInt(localStorage.getItem("activePlayer")) || 1,
-      p1Errored: localStorage.getItem("p1Errored") === "true",
-      p2Errored: localStorage.getItem("p2Errored") === "true",
     };
   },
   computed: {
@@ -182,47 +128,21 @@ export default {
     this.initPlayoffsState();
   },
   methods: {
-    clearGameData() {
-      localStorage.removeItem("gameMode");
-      localStorage.removeItem("player1");
-      localStorage.removeItem("player2");
-      localStorage.removeItem("score1");
-      localStorage.removeItem("score2");
-      localStorage.removeItem("activePlayer");
-      localStorage.removeItem("p1Errored");
-      localStorage.removeItem("p2Errored");
-    },
-    initPlayoffsState() {
-      const qId = parseInt(this.$route.params.questionId) || 1;
-      if (qId === 1 && this.gameMode === "playoffs") {
-        this.score1 = 0;
-        this.score2 = 0;
-        this.activePlayer = 1;
-        this.p1Errored = false;
-        this.p2Errored = false;
-
-        localStorage.setItem("score1", "0");
-        localStorage.setItem("score2", "0");
-        localStorage.setItem("activePlayer", "1");
-        localStorage.setItem("p1Errored", "false");
-        localStorage.setItem("p2Errored", "false");
-      }
-    },
     loadQuestion() {
       this.choice = null;
       this.color = "#efefef";
+
       if (this.currentQuestion && this.currentQuestion.choices) {
         this.choices = [...this.currentQuestion.choices];
       }
+      // Nenhuma flag de estado do jogador precisa ser resetada aqui:
+      // p1Errored/p2Errored e p1HasPlayed/p2HasPlayed valem para TODA a partida.
     },
-    isButtonDisabled(btn) {
-      if (btn.id === "btn-gepeto" && this.isLastQuestion) {
-        return true;
-      }
-      return btn.isDisabled;
+    onHelpClick({ id, index }) {
+      this.handleHelp(id, index);
     },
     handleHelp(id, index) {
-      if (this.isButtonDisabled(this.buttons[index])) return;
+      if (this.buttons[index].isDisabled) return;
       if (id === "btn-cartas") {
         this.getCartasHelp(index);
       } else if (id === "btn-gepeto") {
@@ -246,14 +166,10 @@ export default {
       }
     },
     rightQuestion() {
-      if (this.gameMode === "playoffs") {
-        if (this.activePlayer === 1) {
-          this.score1 += 5;
-          localStorage.setItem("score1", this.score1.toString());
-        } else {
-          this.score2 += 5;
-          localStorage.setItem("score2", this.score2.toString());
-        }
+      if (this.isPlayoffsMode) {
+        this.addScoreToActivePlayer(5);
+        this.markActivePlayerHasPlayed();
+        // Acertou: o MESMO jogador continua ativo, sem trocar turno
       }
 
       const currentId = parseInt(this.$route.params.questionId) || 1;
@@ -266,49 +182,69 @@ export default {
       }
     },
     wrongQuestion() {
-      if (this.gameMode === "playoffs") {
-        const otherPlayerErrored =
-          this.activePlayer === 1 ? this.p2Errored : this.p1Errored;
+      if (this.isPlayoffsMode) {
+        // Verifica se o OUTRO jogador já jogou alguma vez em toda a partida
+        // ANTES de marcar o atual e trocar o turno
+        const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
 
-        // Se ambos os jogadores já erraram -> Modal de Derrota Global
-        if (otherPlayerErrored) {
-          this.clearGameData();
-          this.replaceState();
-          this.dialog = true;
+        // Aplica a penalidade de erro no jogador atual
+        const { playerName, newScore } = this.applyErrorPenaltyToActivePlayer();
+        this.turnLostPlayerName = playerName;
+        this.turnLostNewScore = newScore;
+
+        this.markActivePlayerAsFailed();
+        this.markActivePlayerHasPlayed();
+
+        // Se o outro jogador JÁ jogou alguma vez -> Fim de Jogo
+        if (otherPlayerAlreadyPlayed) {
+          this.$router.push({ name: "gameover" });
           return;
         }
 
-        // Calcula a penalidade do jogador atual
-        if (this.activePlayer === 1) {
-          this.turnLostPlayerName = this.player1;
-          this.score1 = Math.floor(this.score1 / 2);
-          this.turnLostNewScore = this.score1;
-          this.p1Errored = true;
-          localStorage.setItem("score1", this.score1.toString());
-          localStorage.setItem("p1Errored", "true");
-        } else {
-          this.turnLostPlayerName = this.player2;
-          this.score2 = Math.floor(this.score2 / 2);
-          this.turnLostNewScore = this.score2;
-          this.p2Errored = true;
-          localStorage.setItem("score2", this.score2.toString());
-          localStorage.setItem("p2Errored", "true");
-        }
-
-        // Troca o turno do jogador
-        this.activePlayer = this.activePlayer === 1 ? 2 : 1;
-        localStorage.setItem("activePlayer", this.activePlayer.toString());
-
-        // Reseta as ajudas para o próximo jogador
+        // Outro jogador ainda não jogou nenhuma vez -> passa a vez para ele
+        this.switchActivePlayer();
         this.resetHelps();
-
-        // Abre o modal de aviso antes de avançar a rota
         this.turnLostDialog = true;
       } else {
-        // Fluxo padrão
+        // Fluxo padrão (não-playoffs)
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
+      }
+    },
+    /**
+     * Lógica do botão "Desistir"
+     * Regra de negócio válida SOMENTE para o modo PlayOffs
+     */
+    handleGiveUp() {
+      if (!this.isPlayoffsMode) return;
+
+      // Verifica se o OUTRO jogador já jogou alguma vez em toda a partida
+      // ANTES de marcar o atual e trocar o turno
+      const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
+
+      this.markActivePlayerAsFailed();
+      this.markActivePlayerHasPlayed();
+
+      // Se o outro jogador JÁ jogou alguma vez -> Fim de Jogo
+      if (otherPlayerAlreadyPlayed) {
+        this.$router.push({ name: "gameover" });
+        return;
+      }
+
+      // Outro jogador ainda não jogou nenhuma vez -> passa a vez para ele
+      // SEM penalidade de pontuação (desistência não reduz o placar)
+      this.switchActivePlayer();
+      this.resetHelps();
+      this.giveUpDialog = true;
+    },
+    proceedAfterGiveUp() {
+      this.giveUpDialog = false;
+      const currentId = parseInt(this.$route.params.questionId) || 1;
+      if (currentId < this.questions.length) {
+        this.$router.push(`/questions/${currentId + 1}`);
+      } else {
+        this.$router.push({ name: "gameover" });
       }
     },
     proceedAfterTurnLost() {
@@ -317,9 +253,7 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        this.clearGameData();
-        this.replaceState();
-        this.$router.push("/victory");
+        this.$router.push({ name: "gameover" });
       }
     },
     resetHelps() {
@@ -331,6 +265,7 @@ export default {
     getCartasHelp(index) {
       this.updateCallHelp("cartas");
       this.buttons[index].isDisabled = true;
+      this.markHelpUsed("cartas");
     },
     getGepetoHelp(index) {
       if (!this.currentQuestion) return;
@@ -342,10 +277,12 @@ export default {
         answer: respostaCorreta ? respostaCorreta.answer : "",
       });
       this.buttons[index].isDisabled = true;
+      this.markHelpUsed("gepeto");
     },
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");
       this.buttons[index].isDisabled = true;
+      this.markHelpUsed("universitarios");
     },
     removeWrongChoices(count) {
       if (!this.currentQuestion || !this.choices) return;

@@ -37,6 +37,11 @@ const routes = [
     name: "victory",
     component: load("Victory"),
   },
+  {
+    path: "/game-over",
+    name: "gameover",
+    component: load("Gameover"),
+  },
 ];
 
 const router = new VueRouter({

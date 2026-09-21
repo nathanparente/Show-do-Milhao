@@ -2,7 +2,7 @@
   <!-- START QUESTION CARD AREA -->
   <section v-if="currentQuestion" class="mt-20">
     <v-card
-      class="mx-auto mt-10 mr-10 ml-10"
+      class="mx-auto mt-10"
       max-width="100%"
       min-height="20vh"
       :elevation="2"
