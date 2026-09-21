@@ -14,6 +14,11 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/gamemode",
+    name: "Gamemode",
+    component: load("Gamemode"),
+  },
+  {
     path: "/themes",
     name: "Themes",
     component: () => import("@/views/Themes/Themes.vue"),
