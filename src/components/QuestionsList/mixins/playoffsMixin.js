@@ -1,3 +1,5 @@
+import { PLAYOFFS_SCORING } from "@/constants/gameConfig";
+
 /**
  * Mixin responsável por toda a lógica de estado e regras de negócio
  * do modo de jogo PlayOffs (pontuação, turnos, ajudas usadas, etc.)
@@ -249,10 +251,13 @@ export default {
      * considerando se há aposta de truco ativa
      */
     getPointsToWin() {
-      if (this.trucoBet === "simple" || this.trucoBet === "doubled") {
-        return 10;
+      if (this.trucoBet === "simple") {
+        return PLAYOFFS_SCORING.TRUCO_SIMPLE_WIN_POINTS;
       }
-      return 5;
+      if (this.trucoBet === "doubled") {
+        return PLAYOFFS_SCORING.TRUCO_DOUBLE_WIN_POINTS;
+      }
+      return PLAYOFFS_SCORING.NORMAL_WIN_POINTS;
     },
     /**
      * Aplica a penalidade de ERRO COM TRUCO SIMPLES ao jogador ativo:
@@ -265,13 +270,13 @@ export default {
       if (this.activePlayer === 1) {
         playerName = this.player1;
         this.score1 = Math.floor(this.score1 / 2);
-        this.score1 = Math.max(0, this.score1 - 10);
+        this.score1 = this.score1 - PLAYOFFS_SCORING.TRUCO_SIMPLE_ERROR_PENALTY;
         newScore = this.score1;
         localStorage.setItem("score1", this.score1.toString());
       } else {
         playerName = this.player2;
         this.score2 = Math.floor(this.score2 / 2);
-        this.score2 = Math.max(0, this.score2 - 10);
+        this.score2 = this.score2 - PLAYOFFS_SCORING.TRUCO_SIMPLE_ERROR_PENALTY;
         newScore = this.score2;
         localStorage.setItem("score2", this.score2.toString());
       }
@@ -289,12 +294,14 @@ export default {
 
       if (this.activePlayer === 1) {
         playerName = this.player1;
-        this.score1 = Math.max(0, this.score1 - 20);
+        this.score1 =
+          this.score1 - PLAYOFFS_SCORING.TRUCO_DOUBLED_ERROR_PENALTY;
         newScore = this.score1;
         localStorage.setItem("score1", this.score1.toString());
       } else {
         playerName = this.player2;
-        this.score2 = Math.max(0, this.score2 - 20);
+        this.score2 =
+          this.score2 - PLAYOFFS_SCORING.TRUCO_DOUBLED_ERROR_PENALTY;
         newScore = this.score2;
         localStorage.setItem("score2", this.score2.toString());
       }

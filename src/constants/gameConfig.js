@@ -124,3 +124,11 @@ export const UI_TEXTS = Object.freeze({
   PLAYOFFS_TURN_LOST_SUBTITLE: "Você perdeu metade dos seus pontos.",
   PLAYOFFS_CONTINUE_BUTTON: "Continuar Jogo",
 });
+
+export const PLAYOFFS_SCORING = Object.freeze({
+  NORMAL_WIN_POINTS: 5,
+  TRUCO_SIMPLE_WIN_POINTS: 10,
+  TRUCO_DOUBLE_WIN_POINTS: 20,
+  TRUCO_SIMPLE_ERROR_PENALTY: 10,
+  TRUCO_DOUBLED_ERROR_PENALTY: 20,
+});
