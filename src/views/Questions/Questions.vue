@@ -2,7 +2,7 @@
   <v-app>
     <div class="home app-bg-color fill-height">
       <!-- HEADER DO JOGO -->
-      <section class="pa-6">
+      <section v-if="!isLoading" class="pa-6">
         <!-- SE FOR PLAYOFFS: Exibe o subcomponente com o botão Home no slot -->
         <PlayOffs
           v-if="gameMode === 'playoffs'"
@@ -250,7 +250,18 @@ export default {
         choices: choices,
       };
     },
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
     replaceState() {
+      this.clearGameData();
       this.$store.replaceState({
         callHelp: "",
       });

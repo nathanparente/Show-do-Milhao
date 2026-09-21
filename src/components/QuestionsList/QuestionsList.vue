@@ -224,6 +224,17 @@ export default {
         }, 1000);
       }
     },
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
+
     rightQuestion() {
       if (this.gameMode === "playoffs") {
         if (this.activePlayer === 1) {
@@ -239,6 +250,8 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
+        // Fim de jogo com vitória
+        this.clearGameData();
         this.replaceState();
         this.$router.push("/victory");
       }
@@ -248,7 +261,9 @@ export default {
         const otherPlayerErrored =
           this.activePlayer === 1 ? this.p2Errored : this.p1Errored;
 
+        // Se ambos os jogadores erraram -> Fim de jogo (Derrota)
         if (otherPlayerErrored) {
+          this.clearGameData();
           this.replaceState();
           this.dialog = true;
           return;
@@ -279,6 +294,7 @@ export default {
           this.$router.push("/victory");
         }
       } else {
+        this.clearGameData();
         this.replaceState();
         this.dialog = true;
       }
@@ -320,6 +336,7 @@ export default {
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
     },
+
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
     },
