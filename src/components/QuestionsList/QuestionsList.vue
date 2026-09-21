@@ -210,6 +210,17 @@ export default {
         }, 1000);
       }
     },
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
+
     rightQuestion() {
       if (this.isPlayoffsMode) {
         const points = this.getPointsToWin();
@@ -385,6 +396,7 @@ export default {
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
     },
+
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
     },
