@@ -1,9 +1,7 @@
 <template>
   <v-app>
     <div class="home app-bg-color fill-height">
-      <!-- HEADER DO JOGO -->
       <section v-if="!isLoading" class="pa-6">
-        <!-- SE FOR PLAYOFFS: Exibe o subcomponente com o botão Home no slot -->
         <PlayOffs
           v-if="gameMode === 'playoffs'"
           :player1="player1"
@@ -19,7 +17,6 @@
           </template>
         </PlayOffs>
 
-        <!-- MODO PADRÃO: Exibe apenas o botão Home -->
         <v-row v-else align="center" justify="start" class="ma-0">
           <v-btn large fab color="white" @click="replaceState">
             <v-icon color="#012f6d">mdi-home</v-icon>
@@ -27,9 +24,7 @@
         </v-row>
       </section>
 
-      <!-- Conteúdo do Jogo -->
       <section>
-        <!-- ESTADO 1: Loading da IA -->
         <v-row
           v-if="isLoading"
           justify="center"
@@ -47,7 +42,6 @@
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
-
             <div class="progress-container mx-auto">
               <div class="progress-fill" :style="{ width: progress + '%' }">
                 <span v-if="progress > 10" class="progress-text">
@@ -59,7 +53,6 @@
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Jogo Ativo -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
@@ -67,11 +60,13 @@
         >
           <v-col cols="12" md="10" lg="8" class="px-4">
             <QuestionCard :questions="questions" />
-            <QuestionsList :questions="questions" />
+            <QuestionsList
+              :questions="questions"
+              @playoffs-state-updated="onPlayoffsStateUpdated"
+            />
           </v-col>
         </v-row>
 
-        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
@@ -103,7 +98,6 @@ export default {
       progress: 0,
       animationFrameId: null,
       uiTexts: UI_TEXTS,
-
       gameMode: "",
       player1: "Jogador 1",
       player2: "Jogador 2",
@@ -134,6 +128,18 @@ export default {
       this.score1 = parseInt(localStorage.getItem("score1")) || 0;
       this.score2 = parseInt(localStorage.getItem("score2")) || 0;
       this.activePlayer = parseInt(localStorage.getItem("activePlayer")) || 1;
+    },
+    /**
+     * Recebe o estado atualizado do PlayOffs vindo do QuestionsList,
+     * garantindo reatividade da UI mesmo quando NÃO há navegação de rota
+     * (ex: ao usar o Truco "Dobrar a aposta", que mantém a mesma pergunta)
+     */
+    onPlayoffsStateUpdated(newState) {
+      this.player1 = newState.player1;
+      this.player2 = newState.player2;
+      this.score1 = newState.score1;
+      this.score2 = newState.score2;
+      this.activePlayer = newState.activePlayer;
     },
     startTimeProgress(totalQuestions) {
       this.stopTimeProgress();

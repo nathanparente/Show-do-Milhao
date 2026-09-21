@@ -18,6 +18,24 @@
           <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
         </v-btn>
       </v-col>
+
+      <!-- Botão Truco: exclusivo do modo PlayOffs -->
+      <v-col
+        v-if="showTruco"
+        cols="auto"
+        class="d-flex justify-center align-center"
+      >
+        <v-btn
+          id="btn-truco"
+          :disabled="isTrucoDisabled"
+          large
+          fab
+          color="white"
+          @click="$emit('truco-click')"
+        >
+          <v-icon color="#012f6d">mdi-poker-chip</v-icon>
+        </v-btn>
+      </v-col>
     </v-row>
   </v-col>
 </template>
@@ -31,6 +49,14 @@ export default {
       required: true,
     },
     isLastQuestion: {
+      type: Boolean,
+      default: false,
+    },
+    showTruco: {
+      type: Boolean,
+      default: false,
+    },
+    isTrucoDisabled: {
       type: Boolean,
       default: false,
     },

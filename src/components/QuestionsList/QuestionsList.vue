@@ -4,7 +4,10 @@
       <HelpButtons
         :buttons="buttons"
         :is-last-question="isLastQuestion"
+        :show-truco="isPlayoffsMode"
+        :is-truco-disabled="trucoButtonDisabled"
         @help-click="onHelpClick"
+        @truco-click="handleTrucoClick"
       />
       <GiveUpButton :show="isPlayoffsMode" @give-up="handleGiveUp" />
     </v-row>
@@ -29,6 +32,13 @@
       @continue="proceedAfterTurnLost"
     />
     <GiveUpDialog :dialog="giveUpDialog" @continue="proceedAfterGiveUp" />
+
+    <!-- Modal do Truco -->
+    <TrucoDialog
+      :dialog="trucoDialog"
+      @accept="handleTrucoAccept"
+      @double-down="handleTrucoDoubleDown"
+    />
   </section>
 </template>
 
@@ -50,6 +60,8 @@ export default {
     HelpCard: () => import("@/components/HelpCard/HelpCard"),
     TurnLostDialog: () => import("@/components/TurnLostDialog/TurnLostDialog"),
     GiveUpDialog: () => import("@/components/GiveUpDialog/GiveUpDialog"),
+    TrucoDialog: () =>
+      import("@/components/QuestionsList/components/TrucoDialog.vue"),
   },
   mixins: [playoffsMixin],
   props: {
@@ -65,6 +77,7 @@ export default {
       turnLostPlayerName: "",
       turnLostNewScore: 0,
       giveUpDialog: false,
+      trucoDialog: false,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
       buttons: [
@@ -110,6 +123,13 @@ export default {
         this.currentIndex === this.questions.length - 1
       );
     },
+    /**
+     * O botão Truco fica desabilitado se já houver uma aposta ativa
+     * na jogada atual (simples ou dobrada)
+     */
+    trucoButtonDisabled() {
+      return !!this.trucoBet || this.hasActivePlayerUsedTruco;
+    },
   },
   watch: {
     "$route.params.questionId"() {
@@ -126,6 +146,7 @@ export default {
   },
   created() {
     this.initPlayoffsState();
+    this.emitPlayoffsStateUpdate(); // garante que o pai receba o estado inicial ao montar
   },
   methods: {
     loadQuestion() {
@@ -135,8 +156,6 @@ export default {
       if (this.currentQuestion && this.currentQuestion.choices) {
         this.choices = [...this.currentQuestion.choices];
       }
-      // Nenhuma flag de estado do jogador precisa ser resetada aqui:
-      // p1Errored/p2Errored e p1HasPlayed/p2HasPlayed valem para TODA a partida.
     },
     onHelpClick({ id, index }) {
       this.handleHelp(id, index);
@@ -167,9 +186,13 @@ export default {
     },
     rightQuestion() {
       if (this.isPlayoffsMode) {
-        this.addScoreToActivePlayer(5);
+        const points = this.getPointsToWin();
+        this.addScoreToActivePlayer(points);
         this.markActivePlayerHasPlayed();
-        // Acertou: o MESMO jogador continua ativo, sem trocar turno
+
+        // O efeito do Truco (simple OU doubled) vale SOMENTE para esta pergunta.
+        // Sempre limpamos ao resolver, independente do tipo de aposta.
+        this.clearTrucoBet();
       }
 
       const currentId = parseInt(this.$route.params.questionId) || 1;
@@ -183,60 +206,100 @@ export default {
     },
     wrongQuestion() {
       if (this.isPlayoffsMode) {
-        // Verifica se o OUTRO jogador já jogou alguma vez em toda a partida
-        // ANTES de marcar o atual e trocar o turno
         const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
 
-        // Aplica a penalidade de erro no jogador atual
-        const { playerName, newScore } = this.applyErrorPenaltyToActivePlayer();
+        let playerName;
+        let newScore;
+
+        if (this.trucoBet === "simple") {
+          const result = this.applyTrucoSimpleErrorPenalty();
+          playerName = result.playerName;
+          newScore = result.newScore;
+        } else if (this.trucoBet === "doubled") {
+          const result = this.applyTrucoDoubledErrorPenalty();
+          playerName = result.playerName;
+          newScore = result.newScore;
+        } else {
+          const result = this.applyErrorPenaltyToActivePlayer();
+          playerName = result.playerName;
+          newScore = result.newScore;
+        }
+
         this.turnLostPlayerName = playerName;
         this.turnLostNewScore = newScore;
 
         this.markActivePlayerAsFailed();
         this.markActivePlayerHasPlayed();
 
-        // Se o outro jogador JÁ jogou alguma vez -> Fim de Jogo
+        // O efeito do Truco vale SOMENTE para esta pergunta - sempre limpa
+        this.clearTrucoBet();
+
         if (otherPlayerAlreadyPlayed) {
           this.$router.push({ name: "gameover" });
           return;
         }
 
-        // Outro jogador ainda não jogou nenhuma vez -> passa a vez para ele
         this.switchActivePlayer();
         this.resetHelps();
         this.turnLostDialog = true;
       } else {
-        // Fluxo padrão (não-playoffs)
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
       }
     },
-    /**
-     * Lógica do botão "Desistir"
-     * Regra de negócio válida SOMENTE para o modo PlayOffs
-     */
     handleGiveUp() {
       if (!this.isPlayoffsMode) return;
 
-      // Verifica se o OUTRO jogador já jogou alguma vez em toda a partida
-      // ANTES de marcar o atual e trocar o turno
       const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
 
       this.markActivePlayerAsFailed();
       this.markActivePlayerHasPlayed();
+      this.clearTrucoBet();
 
-      // Se o outro jogador JÁ jogou alguma vez -> Fim de Jogo
       if (otherPlayerAlreadyPlayed) {
         this.$router.push({ name: "gameover" });
         return;
       }
 
-      // Outro jogador ainda não jogou nenhuma vez -> passa a vez para ele
-      // SEM penalidade de pontuação (desistência não reduz o placar)
       this.switchActivePlayer();
       this.resetHelps();
       this.giveUpDialog = true;
+    },
+    /**
+     * Abre o modal do Truco
+     */
+    handleTrucoClick() {
+      if (!this.isPlayoffsMode) return;
+      if (this.trucoBet) return; // já há aposta ativa nesta pergunta
+      if (this.hasActivePlayerUsedTruco) return; // já usou seu truco na partida
+      this.trucoDialog = true;
+    },
+    /**
+     * Jogador ACEITA o truco: joga a PERGUNTA ATUAL com risco/prêmio dobrado.
+     * Consome o uso único do Truco desse jogador.
+     */
+    handleTrucoAccept() {
+      this.trucoDialog = false;
+      this.markActivePlayerTrucoUsed();
+      this.setTrucoBet("simple");
+    },
+    /**
+     * Jogador DOBRA A APOSTA: encerra o turno sem jogar,
+     * mantém pontuação intacta, passa a vez para o próximo jogador
+     * que jogará sob risco/prêmio dobrado até errar ou desistir
+     */
+    handleTrucoDoubleDown() {
+      this.trucoDialog = false;
+
+      this.markActivePlayerTrucoUsed();
+      this.markActivePlayerHasPlayed();
+      this.switchActivePlayer();
+      this.resetHelps();
+      this.setTrucoBet("doubled");
+
+      this.choice = null;
+      this.color = "#efefef";
     },
     proceedAfterGiveUp() {
       this.giveUpDialog = false;

@@ -39,11 +39,20 @@ export default {
         gepeto: false,
         universitarios: false,
       },
+
+      // Estado do Truco: indica se a jogada ATUAL está sob efeito de aposta
+      // "trucoBet" pode ser: null | "simple" | "doubled"
+      trucoBet: localStorage.getItem("trucoBet") || null,
+      p1TrucoUsed: localStorage.getItem("p1TrucoUsed") === "true",
+      p2TrucoUsed: localStorage.getItem("p2TrucoUsed") === "true",
     };
   },
   computed: {
     isPlayoffsMode() {
       return this.gameMode === "playoffs";
+    },
+    hasActivePlayerUsedTruco() {
+      return this.activePlayer === 1 ? this.p1TrucoUsed : this.p2TrucoUsed;
     },
   },
   methods: {
@@ -60,6 +69,9 @@ export default {
       localStorage.removeItem("p2HasPlayed");
       localStorage.removeItem("p1HelpsUsed");
       localStorage.removeItem("p2HelpsUsed");
+      localStorage.removeItem("trucoBet");
+      localStorage.removeItem("p1TrucoUsed");
+      localStorage.removeItem("p2TrucoUsed");
     },
     initPlayoffsState() {
       const qId = parseInt(this.$route.params.questionId) || 1;
@@ -91,7 +103,27 @@ export default {
         localStorage.setItem("p2HasPlayed", "false");
         localStorage.setItem("p1HelpsUsed", JSON.stringify(this.p1HelpsUsed));
         localStorage.setItem("p2HelpsUsed", JSON.stringify(this.p2HelpsUsed));
+        this.trucoBet = null;
+        this.p1TrucoUsed = false;
+        this.p2TrucoUsed = false;
+        localStorage.setItem("trucoBet", "");
+        localStorage.setItem("p1TrucoUsed", "false");
+        localStorage.setItem("p2TrucoUsed", "false");
       }
+    },
+    /**
+     * Emite o estado atual do PlayOffs para o componente pai,
+     * garantindo que a UI (PlayOffs.vue) sempre reflita o estado real,
+     * independente de haver navegação de rota ou não.
+     */
+    emitPlayoffsStateUpdate() {
+      this.$emit("playoffs-state-updated", {
+        player1: this.player1,
+        player2: this.player2,
+        score1: this.score1,
+        score2: this.score2,
+        activePlayer: this.activePlayer,
+      });
     },
     /**
      * Marca o jogador ativo como "já teve uma jogada" (independente do resultado)
@@ -138,6 +170,7 @@ export default {
         this.score2 += points;
         localStorage.setItem("score2", this.score2.toString());
       }
+      this.emitPlayoffsStateUpdate();
     },
     /**
      * Aplica a penalidade de erro (divide por 2) ao jogador ativo
@@ -159,6 +192,7 @@ export default {
         localStorage.setItem("score2", this.score2.toString());
       }
 
+      this.emitPlayoffsStateUpdate();
       return { playerName, newScore };
     },
     /**
@@ -167,6 +201,7 @@ export default {
     switchActivePlayer() {
       this.activePlayer = this.activePlayer === 1 ? 2 : 1;
       localStorage.setItem("activePlayer", this.activePlayer.toString());
+      this.emitPlayoffsStateUpdate();
     },
     /**
      * Marca uma ajuda como usada pelo jogador ativo
@@ -181,6 +216,91 @@ export default {
         this.p2HelpsUsed[helpType] = true;
         localStorage.setItem("p2HelpsUsed", JSON.stringify(this.p2HelpsUsed));
       }
+    },
+    /**
+     * Define o tipo de aposta ativa para a jogada atual
+     * @param {string|null} betType - "simple" | "doubled" | null
+     */
+    setTrucoBet(betType) {
+      this.trucoBet = betType;
+      localStorage.setItem("trucoBet", betType || "");
+    },
+    /**
+     * Limpa a aposta de truco (volta ao normal)
+     */
+    clearTrucoBet() {
+      this.trucoBet = null;
+      localStorage.setItem("trucoBet", "");
+    },
+    /**
+     * Marca que o jogador ATIVO usou seu Truco (uso único por partida)
+     */
+    markActivePlayerTrucoUsed() {
+      if (this.activePlayer === 1) {
+        this.p1TrucoUsed = true;
+        localStorage.setItem("p1TrucoUsed", "true");
+      } else {
+        this.p2TrucoUsed = true;
+        localStorage.setItem("p2TrucoUsed", "true");
+      }
+    },
+    /**
+     * Retorna os pontos a ganhar em caso de acerto,
+     * considerando se há aposta de truco ativa
+     */
+    getPointsToWin() {
+      if (this.trucoBet === "simple" || this.trucoBet === "doubled") {
+        return 10;
+      }
+      return 5;
+    },
+    /**
+     * Aplica a penalidade de ERRO COM TRUCO SIMPLES ao jogador ativo:
+     * perde metade dos pontos + mais 10 pontos do restante
+     */
+    applyTrucoSimpleErrorPenalty() {
+      let playerName;
+      let newScore;
+
+      if (this.activePlayer === 1) {
+        playerName = this.player1;
+        this.score1 = Math.floor(this.score1 / 2);
+        this.score1 = Math.max(0, this.score1 - 10);
+        newScore = this.score1;
+        localStorage.setItem("score1", this.score1.toString());
+      } else {
+        playerName = this.player2;
+        this.score2 = Math.floor(this.score2 / 2);
+        this.score2 = Math.max(0, this.score2 - 10);
+        newScore = this.score2;
+        localStorage.setItem("score2", this.score2.toString());
+      }
+
+      this.emitPlayoffsStateUpdate();
+      return { playerName, newScore };
+    },
+    /**
+     * Aplica a penalidade de ERRO COM TRUCO DOBRADO ao jogador ativo:
+     * perde 20 pontos fixos
+     */
+    applyTrucoDoubledErrorPenalty() {
+      let playerName;
+      let newScore;
+
+      if (this.activePlayer === 1) {
+        playerName = this.player1;
+        this.score1 = Math.max(0, this.score1 - 20);
+        newScore = this.score1;
+        localStorage.setItem("score1", this.score1.toString());
+      } else {
+        playerName = this.player2;
+        this.score2 = Math.max(0, this.score2 - 20);
+        newScore = this.score2;
+        localStorage.setItem("score2", this.score2.toString());
+      }
+
+      this.emitPlayoffsStateUpdate();
+      return { playerName, newScore };
     },
   },
 };
