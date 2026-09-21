@@ -4,7 +4,7 @@
     <v-dialog :value="dialog" persistent max-width="512">
       <v-card class="modal-card">
         <v-card-title class="headline modal-title">
-          Que pena, você errou! ({{ score }} / {{ totalQuestions }})
+          FIM DE JOGO! ({{ score }} / {{ totalQuestions }})
         </v-card-title>
 
         <v-card-text class="modal-text">

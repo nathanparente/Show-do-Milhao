@@ -76,6 +76,13 @@
       :score="parseInt($route.params.questionId - 1)"
     />
     <HelpCard @apply-cartas="removeWrongChoices" />
+
+    <TurnLostDialog
+      :dialog="turnLostDialog"
+      :player-name="turnLostPlayerName"
+      :new-score="turnLostNewScore"
+      @continue="proceedAfterTurnLost"
+    />
   </section>
 </template>
 
@@ -88,6 +95,7 @@ export default {
   components: {
     AlertDialog: () => import("@/components/AlertDialog/AlertDialog"),
     HelpCard: () => import("@/components/HelpCard/HelpCard"),
+    TurnLostDialog: () => import("@/components/TurnLostDialog/TurnLostDialog"),
   },
   props: {
     questions: {
@@ -98,6 +106,9 @@ export default {
   data() {
     return {
       dialog: false,
+      turnLostDialog: false,
+      turnLostPlayerName: "",
+      turnLostNewScore: 0,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
       buttons: [
@@ -171,6 +182,16 @@ export default {
     this.initPlayoffsState();
   },
   methods: {
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
     initPlayoffsState() {
       const qId = parseInt(this.$route.params.questionId) || 1;
       if (qId === 1 && this.gameMode === "playoffs") {
@@ -224,17 +245,6 @@ export default {
         }, 1000);
       }
     },
-    clearGameData() {
-      localStorage.removeItem("gameMode");
-      localStorage.removeItem("player1");
-      localStorage.removeItem("player2");
-      localStorage.removeItem("score1");
-      localStorage.removeItem("score2");
-      localStorage.removeItem("activePlayer");
-      localStorage.removeItem("p1Errored");
-      localStorage.removeItem("p2Errored");
-    },
-
     rightQuestion() {
       if (this.gameMode === "playoffs") {
         if (this.activePlayer === 1) {
@@ -250,7 +260,6 @@ export default {
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
-        // Fim de jogo com vitória
         this.clearGameData();
         this.replaceState();
         this.$router.push("/victory");
@@ -261,7 +270,7 @@ export default {
         const otherPlayerErrored =
           this.activePlayer === 1 ? this.p2Errored : this.p1Errored;
 
-        // Se ambos os jogadores erraram -> Fim de jogo (Derrota)
+        // Se ambos os jogadores já erraram -> Modal de Derrota Global
         if (otherPlayerErrored) {
           this.clearGameData();
           this.replaceState();
@@ -269,34 +278,48 @@ export default {
           return;
         }
 
+        // Calcula a penalidade do jogador atual
         if (this.activePlayer === 1) {
+          this.turnLostPlayerName = this.player1;
           this.score1 = Math.floor(this.score1 / 2);
+          this.turnLostNewScore = this.score1;
           this.p1Errored = true;
           localStorage.setItem("score1", this.score1.toString());
           localStorage.setItem("p1Errored", "true");
         } else {
+          this.turnLostPlayerName = this.player2;
           this.score2 = Math.floor(this.score2 / 2);
+          this.turnLostNewScore = this.score2;
           this.p2Errored = true;
           localStorage.setItem("score2", this.score2.toString());
           localStorage.setItem("p2Errored", "true");
         }
 
+        // Troca o turno do jogador
         this.activePlayer = this.activePlayer === 1 ? 2 : 1;
         localStorage.setItem("activePlayer", this.activePlayer.toString());
 
+        // Reseta as ajudas para o próximo jogador
         this.resetHelps();
 
-        const currentId = parseInt(this.$route.params.questionId) || 1;
-        if (currentId < this.questions.length) {
-          this.$router.push(`/questions/${currentId + 1}`);
-        } else {
-          this.replaceState();
-          this.$router.push("/victory");
-        }
+        // Abre o modal de aviso antes de avançar a rota
+        this.turnLostDialog = true;
       } else {
+        // Fluxo padrão
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
+      }
+    },
+    proceedAfterTurnLost() {
+      this.turnLostDialog = false;
+      const currentId = parseInt(this.$route.params.questionId) || 1;
+      if (currentId < this.questions.length) {
+        this.$router.push(`/questions/${currentId + 1}`);
+      } else {
+        this.clearGameData();
+        this.replaceState();
+        this.$router.push("/victory");
       }
     },
     resetHelps() {
@@ -336,7 +359,6 @@ export default {
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
     },
-
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
     },
