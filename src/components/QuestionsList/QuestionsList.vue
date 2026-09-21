@@ -159,6 +159,16 @@ export default {
     this.emitPlayoffsStateUpdate(); // garante que o pai receba o estado inicial ao montar
   },
   methods: {
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
     initPlayoffsState() {
       const qId = parseInt(this.$route.params.questionId) || 1;
       if (qId === 1 && this.gameMode === "playoffs") {
@@ -210,17 +220,6 @@ export default {
         }, 1000);
       }
     },
-    clearGameData() {
-      localStorage.removeItem("gameMode");
-      localStorage.removeItem("player1");
-      localStorage.removeItem("player2");
-      localStorage.removeItem("score1");
-      localStorage.removeItem("score2");
-      localStorage.removeItem("activePlayer");
-      localStorage.removeItem("p1Errored");
-      localStorage.removeItem("p2Errored");
-    },
-
     rightQuestion() {
       if (this.isPlayoffsMode) {
         const points = this.getPointsToWin();
@@ -280,6 +279,7 @@ export default {
         this.resetHelps();
         this.turnLostDialog = true;
       } else {
+        // Fluxo padrão
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
@@ -396,7 +396,6 @@ export default {
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
     },
-
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
     },
