@@ -103,16 +103,6 @@ export default {
       choices: [],
       choice: null,
       color: "#efefef",
-
-      // ESTADOS DO PLAYOFFS
-      gameMode: localStorage.getItem("gameMode") || "",
-      player1: localStorage.getItem("player1") || "Jogador 1",
-      player2: localStorage.getItem("player2") || "Jogador 2",
-      score1: parseInt(localStorage.getItem("score1")) || 0,
-      score2: parseInt(localStorage.getItem("score2")) || 0,
-      activePlayer: parseInt(localStorage.getItem("activePlayer")) || 1,
-      p1Errored: localStorage.getItem("p1Errored") === "true",
-      p2Errored: localStorage.getItem("p2Errored") === "true",
     };
   },
   computed: {
@@ -159,32 +149,6 @@ export default {
     this.emitPlayoffsStateUpdate(); // garante que o pai receba o estado inicial ao montar
   },
   methods: {
-    clearGameData() {
-      localStorage.removeItem("gameMode");
-      localStorage.removeItem("player1");
-      localStorage.removeItem("player2");
-      localStorage.removeItem("score1");
-      localStorage.removeItem("score2");
-      localStorage.removeItem("activePlayer");
-      localStorage.removeItem("p1Errored");
-      localStorage.removeItem("p2Errored");
-    },
-    initPlayoffsState() {
-      const qId = parseInt(this.$route.params.questionId) || 1;
-      if (qId === 1 && this.gameMode === "playoffs") {
-        this.score1 = 0;
-        this.score2 = 0;
-        this.activePlayer = 1;
-        this.p1Errored = false;
-        this.p2Errored = false;
-
-        localStorage.setItem("score1", "0");
-        localStorage.setItem("score2", "0");
-        localStorage.setItem("activePlayer", "1");
-        localStorage.setItem("p1Errored", "false");
-        localStorage.setItem("p2Errored", "false");
-      }
-    },
     loadQuestion() {
       this.choice = null;
       this.color = "#efefef";
@@ -192,6 +156,8 @@ export default {
       if (this.currentQuestion && this.currentQuestion.choices) {
         this.choices = [...this.currentQuestion.choices];
       }
+      // Nenhuma flag de estado do jogador precisa ser resetada aqui:
+      // p1Errored/p2Errored e p1HasPlayed/p2HasPlayed valem para TODA a partida.
     },
     onHelpClick({ id, index }) {
       this.handleHelp(id, index);
@@ -279,7 +245,7 @@ export default {
         this.resetHelps();
         this.turnLostDialog = true;
       } else {
-        // Fluxo padrão
+        // Fluxo padrão (não-playoffs)
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
