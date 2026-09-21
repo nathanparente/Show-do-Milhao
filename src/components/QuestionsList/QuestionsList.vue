@@ -156,8 +156,6 @@ export default {
       if (this.currentQuestion && this.currentQuestion.choices) {
         this.choices = [...this.currentQuestion.choices];
       }
-      // Nenhuma flag de estado do jogador precisa ser resetada aqui:
-      // p1Errored/p2Errored e p1HasPlayed/p2HasPlayed valem para TODA a partida.
     },
     onHelpClick({ id, index }) {
       this.handleHelp(id, index);
@@ -245,7 +243,6 @@ export default {
         this.resetHelps();
         this.turnLostDialog = true;
       } else {
-        // Fluxo padrão (não-playoffs)
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
