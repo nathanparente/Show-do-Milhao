@@ -84,7 +84,7 @@ export default {
         {
           id: "btn-cartas",
           title: "Cartas",
-          icon: "mdi-cards-spade",
+          icon: "mdi-cards-playing-spade-multiple",
           isDisabled: false,
         },
         {
