@@ -1,0 +1,26 @@
+.progress-container {
+  width: 100%;
+  max-width: 420px;
+  height: 32px;
+  background-color: #ffffff;
+  padding: 4px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #012f6d;
+  border-radius: 12px;
+  transition: width 0.1s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-text {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+}

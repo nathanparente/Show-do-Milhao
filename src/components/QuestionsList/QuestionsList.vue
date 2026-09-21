@@ -1,8 +1,6 @@
 <template>
-  <!-- START QUESTION LIST AREA -->
   <section v-if="currentQuestion">
-    <!-- Botões de Ajudas -->
-    <v-row class="mt-5" justify="space-between" align="center">
+    <v-row class="mt-3" justify="space-between" align="center">
       <v-col
         v-for="(btn, index) in buttons"
         :key="btn.id"
@@ -22,7 +20,6 @@
       </v-col>
     </v-row>
 
-    <!-- Lista de Alternativas -->
     <v-row
       v-for="(item, i) in choices"
       :key="i"
@@ -36,7 +33,6 @@
         </span>
       </v-avatar>
 
-      <!-- Alternativa Selecionada (Mantém mesmo tamanho e cor de texto) -->
       <v-hover v-if="choice === i" v-slot="{ hover }">
         <v-card
           rounded-8
@@ -55,7 +51,6 @@
         </v-card>
       </v-hover>
 
-      <!-- Alternativas Disponíveis com efeito Hover aprimorado -->
       <v-hover v-else v-slot="{ hover }">
         <v-card
           rounded-8
@@ -76,14 +71,12 @@
       </v-hover>
     </v-row>
 
-    <!-- Modais de Alerta e Ajuda -->
     <AlertDialog
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
     />
     <HelpCard @apply-cartas="removeWrongChoices" />
   </section>
-  <!-- END FIRST SECTION -->
 </template>
 
 <script>
@@ -130,6 +123,16 @@ export default {
       choices: [],
       choice: null,
       color: "#efefef",
+
+      // ESTADOS DO PLAYOFFS
+      gameMode: localStorage.getItem("gameMode") || "",
+      player1: localStorage.getItem("player1") || "Jogador 1",
+      player2: localStorage.getItem("player2") || "Jogador 2",
+      score1: parseInt(localStorage.getItem("score1")) || 0,
+      score2: parseInt(localStorage.getItem("score2")) || 0,
+      activePlayer: parseInt(localStorage.getItem("activePlayer")) || 1,
+      p1Errored: localStorage.getItem("p1Errored") === "true",
+      p2Errored: localStorage.getItem("p2Errored") === "true",
     };
   },
   computed: {
@@ -164,7 +167,26 @@ export default {
       },
     },
   },
+  created() {
+    this.initPlayoffsState();
+  },
   methods: {
+    initPlayoffsState() {
+      const qId = parseInt(this.$route.params.questionId) || 1;
+      if (qId === 1 && this.gameMode === "playoffs") {
+        this.score1 = 0;
+        this.score2 = 0;
+        this.activePlayer = 1;
+        this.p1Errored = false;
+        this.p2Errored = false;
+
+        localStorage.setItem("score1", "0");
+        localStorage.setItem("score2", "0");
+        localStorage.setItem("activePlayer", "1");
+        localStorage.setItem("p1Errored", "false");
+        localStorage.setItem("p2Errored", "false");
+      }
+    },
     loadQuestion() {
       this.choice = null;
       this.color = "#efefef";
@@ -180,7 +202,6 @@ export default {
     },
     handleHelp(id, index) {
       if (this.isButtonDisabled(this.buttons[index])) return;
-
       if (id === "btn-cartas") {
         this.getCartasHelp(index);
       } else if (id === "btn-gepeto") {
@@ -198,10 +219,22 @@ export default {
         }, 1000);
       } else {
         this.color = "#f60808";
-        this.wrongQuestion();
+        setTimeout(() => {
+          this.wrongQuestion();
+        }, 1000);
       }
     },
     rightQuestion() {
+      if (this.gameMode === "playoffs") {
+        if (this.activePlayer === 1) {
+          this.score1 += 5;
+          localStorage.setItem("score1", this.score1.toString());
+        } else {
+          this.score2 += 5;
+          localStorage.setItem("score2", this.score2.toString());
+        }
+      }
+
       const currentId = parseInt(this.$route.params.questionId) || 1;
       if (currentId < this.questions.length) {
         this.$router.push(`/questions/${currentId + 1}`);
@@ -211,8 +244,50 @@ export default {
       }
     },
     wrongQuestion() {
+      if (this.gameMode === "playoffs") {
+        const otherPlayerErrored =
+          this.activePlayer === 1 ? this.p2Errored : this.p1Errored;
+
+        if (otherPlayerErrored) {
+          this.replaceState();
+          this.dialog = true;
+          return;
+        }
+
+        if (this.activePlayer === 1) {
+          this.score1 = Math.floor(this.score1 / 2);
+          this.p1Errored = true;
+          localStorage.setItem("score1", this.score1.toString());
+          localStorage.setItem("p1Errored", "true");
+        } else {
+          this.score2 = Math.floor(this.score2 / 2);
+          this.p2Errored = true;
+          localStorage.setItem("score2", this.score2.toString());
+          localStorage.setItem("p2Errored", "true");
+        }
+
+        this.activePlayer = this.activePlayer === 1 ? 2 : 1;
+        localStorage.setItem("activePlayer", this.activePlayer.toString());
+
+        this.resetHelps();
+
+        const currentId = parseInt(this.$route.params.questionId) || 1;
+        if (currentId < this.questions.length) {
+          this.$router.push(`/questions/${currentId + 1}`);
+        } else {
+          this.replaceState();
+          this.$router.push("/victory");
+        }
+      } else {
+        this.replaceState();
+        this.dialog = true;
+      }
+    },
+    resetHelps() {
+      this.buttons.forEach((btn) => {
+        btn.isDisabled = false;
+      });
       this.replaceState();
-      this.dialog = true;
     },
     getCartasHelp(index) {
       this.updateCallHelp("cartas");
@@ -239,7 +314,6 @@ export default {
       const numToRemove =
         count === 4 ? 0 : Math.min(count, wrongChoices.length);
       if (numToRemove === 0) return;
-
       const shuffledWrong = [...wrongChoices].sort(() => Math.random() - 0.5);
       const wrongToKeep = shuffledWrong.slice(numToRemove);
       this.choices = this.choices.filter(
@@ -247,9 +321,7 @@ export default {
       );
     },
     replaceState() {
-      this.$store.replaceState({
-        callHelp: "",
-      });
+      this.$store.replaceState({ callHelp: "" });
     },
     ...mapMutations(["updateChartData", "updateCallHelp"]),
   },
