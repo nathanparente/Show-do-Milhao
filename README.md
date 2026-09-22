@@ -20,6 +20,8 @@ Uma releitura do clássico jogo **Show do Milhão**, focada em perguntas técnic
 
 Diferente das versões com banco de dados estático, este projeto consome a **LLM local Llama 3 (via Ollama)** para gerar perguntas, alternativas e gabaritos inéditos em formato JSON a cada nova partida.
 
+O jogo conta com dois modos de partida: o modo **Clássico** (single player) e o modo **PlayOffs**, um modo competitivo 1x1 com sistema de turnos, apostas e eliminação.
+
 ---
 
 ## 🚀 Tecnologias Utilizadas
@@ -36,12 +38,49 @@ Diferente das versões com banco de dados estático, este projeto consome a **LL
 
 - **Perguntas Dinâmicas com IA:** Geração sem necessidade de APIs pagas ou chaves de acesso.
 - **Curva de Dificuldade Progressiva (Porcentagem):** A complexidade das perguntas é calculada automaticamente com base no total de perguntas da partida:
-- - 0% a 50%: Nível Fácil (conceitos fundamentais e definições).
-- - 50% a 80%: Nível Médio (boas práticas e cenários práticos intermediários).
-- - 80% a 100%: Nível Difícil/Especialista (arquitetura avançada, diagnósticos em produção e trade-offs críticos).
+  - 0% a 50%: Nível Fácil (conceitos fundamentais e definições).
+  - 50% a 80%: Nível Médio (boas práticas e cenários práticos intermediários).
+  - 80% a 100%: Nível Difícil/Especialista (arquitetura avançada, diagnósticos em produção e trade-offs críticos).
 - **Cartas:** Modal com 4 naipes de baralho (com valores de 1 a 4 sorteados aleatoriamente a cada partida) que elimina a quantidade correspondente de alternativas incorretas.
 - **Gepeto:** Exibe a resposta correta por extenso gerada pela IA. Fica automaticamente desabilitado na última pergunta (Pergunta do Milhão).
 - **Universitários:** Solicita que o jogador peça ajuda de amigos para achar a resposta certa.
+
+---
+
+### 🏆 Modo PlayOffs
+
+Modo competitivo para 2 jogadores, disputado por turnos na mesma partida. As regras a seguir se aplicam **exclusivamente** a esse modo de jogo.
+
+#### Regras Gerais
+
+- O **Jogador 1** inicia a partida e permanece jogando sozinho, sequencialmente, **enquanto for acertando** as perguntas (+5 pontos por acerto).
+- Ao **errar uma alternativa** ou **clicar em "Desistir"**, o jogador atual sofre sua primeira falha:
+  - Se o **outro jogador nunca jogou** durante toda a partida, a vez é passada para ele, que assume o controle a partir da **próxima pergunta**.
+  - Se o **outro jogador já jogou alguma vez** e o jogador atual falha novamente (2ª falha, seja erro ou desistência), a partida é **encerrada imediatamente**, redirecionando para a tela de **Fim de Jogo**.
+- Cada jogador possui, portanto, **apenas 1 falha permitida durante toda a partida** (erro ou desistência).
+
+#### Botão "Desistir"
+
+Disponível apenas no modo PlayOffs. Permite ao jogador ativo encerrar seu turno voluntariamente, mantendo o placar atual **sem penalidades de pontuação**. Segue a mesma regra de "1 falha por jogador" descrita acima: se o outro jogador já tiver jogado, a partida é encerrada.
+
+#### Botão "Truco"
+
+Ajuda de **uso único por jogador** (assim como Cartas, Gepeto e Universitários), disponível apenas no modo PlayOffs. Ao ser acionado, abre um modal de aposta com duas opções:
+
+- **Aceitar:** o jogador ativo responde a pergunta atual com risco/prêmio dobrado:
+  - Se **acertar**: ganha **10 pontos** (em vez de 5).
+  - Se **errar**: perde a metade dos pontos atuais **e mais 10 pontos** do saldo restante, seguindo a mesma regra de troca de turno / fim de jogo do erro comum.
+- **Dobrar a Aposta:** o jogador ativo encerra seu turno **sem responder** a pergunta atual, mantendo sua pontuação intacta. A vez passa para o **outro jogador**, que responderá **a mesma pergunta** (sem avançar de rota) sob risco/prêmio dobrado:
+  - Se **acertar**: ganha **10 pontos**.
+  - Se **errar**: perde **20 pontos** fixos, seguindo a mesma regra de troca de turno / fim de jogo do erro comum.
+  - O efeito da aposta dobrada é válido **somente para essa pergunta específica**, não persistindo para as perguntas seguintes.
+
+#### Tela de Fim de Jogo (Game Over)
+
+Ao final da partida (por eliminação de ambos os jogadores), o usuário é redirecionado para uma tela de **ranking**, exibindo:
+- Nome e pontuação final de cada jogador, ordenados do maior para o menor placar.
+- Destaque visual (coroa) para o jogador vencedor, quando não há empate.
+- Indicação visual (ícones de check/minus) de quais ajudas (Cartas, Gepeto, Universitários) cada jogador utilizou durante a partida.
 
 ---
 

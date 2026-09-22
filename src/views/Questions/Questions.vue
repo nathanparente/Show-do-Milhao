@@ -1,18 +1,30 @@
 <template>
   <v-app>
     <div class="home app-bg-color fill-height">
-      <!-- Botão Voltar/Home -->
-      <section>
-        <v-row class="mt-10 ml-10" justify="start" align="start">
+      <section v-if="!isLoading" class="pa-6">
+        <PlayOffs
+          v-if="gameMode === 'playoffs'"
+          :player1="player1"
+          :player2="player2"
+          :score1="score1"
+          :score2="score2"
+          :active-player="activePlayer"
+        >
+          <template #left-action>
+            <v-btn large fab color="white" class="mr-6" @click="replaceState">
+              <v-icon color="#012f6d">mdi-home</v-icon>
+            </v-btn>
+          </template>
+        </PlayOffs>
+
+        <v-row v-else align="center" justify="start" class="ma-0">
           <v-btn large fab color="white" @click="replaceState">
-            <v-icon>mdi-home</v-icon>
+            <v-icon color="#012f6d">mdi-home</v-icon>
           </v-btn>
         </v-row>
       </section>
 
-      <!-- Conteúdo do Jogo -->
       <section>
-        <!-- ESTADO 1: Loading da IA -->
         <v-row
           v-if="isLoading"
           justify="center"
@@ -27,12 +39,9 @@
               contain
               class="mx-auto mb-4"
             ></v-img>
-
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
-
-            <!-- BARRA DE PROGRESSO BASEADA EM TEMPO DE EXECUÇÃO -->
             <div class="progress-container mx-auto">
               <div class="progress-fill" :style="{ width: progress + '%' }">
                 <span v-if="progress > 10" class="progress-text">
@@ -40,12 +49,10 @@
                 </span>
               </div>
             </div>
-
             <p class="subtitle-1 mb-6">{{ uiTexts.LOADING_SUBTITLE }}</p>
           </v-col>
         </v-row>
 
-        <!-- ESTADO 2: Jogo Ativo -->
         <v-row
           v-else-if="questions && questions.length > 0"
           justify="center"
@@ -53,11 +60,13 @@
         >
           <v-col cols="12" md="10" lg="8" class="px-4">
             <QuestionCard :questions="questions" />
-            <QuestionsList :questions="questions" />
+            <QuestionsList
+              :questions="questions"
+              @playoffs-state-updated="onPlayoffsStateUpdated"
+            />
           </v-col>
         </v-row>
 
-        <!-- ESTADO 3: Erro de Conexão -->
         <v-row v-else justify="center" align="center" class="mt-12">
           <v-col cols="12" class="text-center white--text">
             <p class="text-h6">{{ uiTexts.ERROR_TITLE }}</p>
@@ -80,6 +89,7 @@ export default {
   components: {
     QuestionCard: () => import("@/components/QuestionCard/QuestionCard"),
     QuestionsList: () => import("@/components/QuestionsList/QuestionsList"),
+    PlayOffs: () => import("@/components/PlayOffs/PlayOffs"),
   },
   data() {
     return {
@@ -88,7 +98,21 @@ export default {
       progress: 0,
       animationFrameId: null,
       uiTexts: UI_TEXTS,
+      gameMode: "",
+      player1: "Jogador 1",
+      player2: "Jogador 2",
+      score1: 0,
+      score2: 0,
+      activePlayer: 1,
     };
+  },
+  watch: {
+    "$route.params.questionId": {
+      immediate: true,
+      handler() {
+        this.loadPlayoffsData();
+      },
+    },
   },
   async created() {
     await this.gerarPerguntasComIA();
@@ -97,16 +121,34 @@ export default {
     this.stopTimeProgress();
   },
   methods: {
+    loadPlayoffsData() {
+      this.gameMode = localStorage.getItem("gameMode") || "";
+      this.player1 = localStorage.getItem("player1") || "Jogador 1";
+      this.player2 = localStorage.getItem("player2") || "Jogador 2";
+      this.score1 = parseInt(localStorage.getItem("score1")) || 0;
+      this.score2 = parseInt(localStorage.getItem("score2")) || 0;
+      this.activePlayer = parseInt(localStorage.getItem("activePlayer")) || 1;
+    },
+    /**
+     * Recebe o estado atualizado do PlayOffs vindo do QuestionsList,
+     * garantindo reatividade da UI mesmo quando NÃO há navegação de rota
+     * (ex: ao usar o Truco "Dobrar a aposta", que mantém a mesma pergunta)
+     */
+    onPlayoffsStateUpdated(newState) {
+      this.player1 = newState.player1;
+      this.player2 = newState.player2;
+      this.score1 = newState.score1;
+      this.score2 = newState.score2;
+      this.activePlayer = newState.activePlayer;
+    },
     startTimeProgress(totalQuestions) {
       this.stopTimeProgress();
       this.progress = 0;
-
       const startTime = performance.now();
       const estimatedTotalMs = totalQuestions * 2500;
 
       const updateProgress = () => {
         const elapsedMs = performance.now() - startTime;
-
         if (elapsedMs <= estimatedTotalMs) {
           this.progress = (elapsedMs / estimatedTotalMs) * 90;
         } else {
@@ -121,21 +163,17 @@ export default {
 
       this.animationFrameId = requestAnimationFrame(updateProgress);
     },
-
     stopTimeProgress() {
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
       }
     },
-
     async gerarPerguntasComIA() {
       this.isLoading = true;
-
       const activeThemes = this.$route.query.themes
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
-
       const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
 
       this.startTimeProgress(totalQuestions);
@@ -165,7 +203,6 @@ export default {
 
         this.stopTimeProgress();
         this.progress = 100;
-
         await new Promise((resolve) => setTimeout(resolve, 400));
       } catch (error) {
         console.error("Erro ao gerar perguntas com IA:", error);
@@ -174,12 +211,10 @@ export default {
         this.isLoading = false;
       }
     },
-
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
     },
-
     formatarParaModeloDoJogo(itemIA, idIndex) {
       let choices = [
         {
@@ -221,8 +256,18 @@ export default {
         choices: choices,
       };
     },
-
+    clearGameData() {
+      localStorage.removeItem("gameMode");
+      localStorage.removeItem("player1");
+      localStorage.removeItem("player2");
+      localStorage.removeItem("score1");
+      localStorage.removeItem("score2");
+      localStorage.removeItem("activePlayer");
+      localStorage.removeItem("p1Errored");
+      localStorage.removeItem("p2Errored");
+    },
     replaceState() {
+      this.clearGameData();
       this.$store.replaceState({
         callHelp: "",
       });
@@ -232,31 +277,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.progress-container {
-  width: 100%;
-  max-width: 420px;
-  height: 32px;
-  background-color: #ffffff;
-  padding: 4px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background-color: #012f6d;
-  border-radius: 12px;
-  transition: width 0.1s linear;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.progress-text {
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 14px;
-}
-</style>
+<style scoped src="./style.css"></style>

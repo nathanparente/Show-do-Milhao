@@ -14,6 +14,11 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/gamemode",
+    name: "Gamemode",
+    component: load("Gamemode"),
+  },
+  {
     path: "/themes",
     name: "Themes",
     component: () => import("@/views/Themes/Themes.vue"),
@@ -31,6 +36,11 @@ const routes = [
     path: "/victory",
     name: "victory",
     component: load("Victory"),
+  },
+  {
+    path: "/game-over",
+    name: "gameover",
+    component: load("Gameover"),
   },
 ];
 

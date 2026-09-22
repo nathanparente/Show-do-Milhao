@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     startGame() {
-      this.$router.push("/themes");
+      this.$router.push("/gamemode");
     },
   },
 };
