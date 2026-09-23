@@ -1,4 +1,10 @@
-import { TOTAL_QUESTIONS, THEMES, THEME_KEYWORDS } from "@/constants/game";
+import {
+  TOTAL_QUESTIONS,
+  THEMES,
+  THEME_KEYWORDS,
+  PROGRESS_CONFIG,
+} from "@/constants/game";
+
 import {
   SYSTEM_PROMPT,
   DIFFICULTY_GUIDE,
@@ -120,14 +126,71 @@ ${QUIZ_EXAMPLE}`;
     return haystack.includes(slot.topico.toLowerCase());
   },
 
-  /**
-   * generateFn(messages) -> objeto JSON (usa format: QUIZ_SCHEMA)
-   */
-  async GENERATE_VALIDATED_QUIZ(generateFn, temas, quantidade, maxRetries = 2) {
-    const { slots, messages } = this.GET_MESSAGES(temas, quantidade);
-    const raw = await generateFn(messages);
-    const perguntas = slots.map((_, i) => (raw.perguntas || [])[i] || null);
+  _getCharsPerQuestion() {
+    const stored = parseInt(
+      localStorage.getItem(PROGRESS_CONFIG.STORAGE_KEY),
+      10
+    );
+    return stored > 0 ? stored : PROGRESS_CONFIG.DEFAULT_CHARS_PER_QUESTION;
+  },
 
+  /** Média móvel: a estimativa se ajusta ao modelo/máquina sem oscilar */
+  _saveCharsPerQuestion(measured) {
+    if (!measured || measured < 50) return;
+    const current = this._getCharsPerQuestion();
+    const smoothed = Math.round(current * 0.6 + measured * 0.4);
+    localStorage.setItem(PROGRESS_CONFIG.STORAGE_KEY, String(smoothed));
+  },
+
+  /**
+   * Converte o conteúdo parcial do stream em fração (0 a 1).
+   * Combina perguntas concluídas (preciso) com caracteres recebidos (contínuo),
+   * sem nunca ultrapassar a pergunta que ainda está sendo escrita.
+   */
+  _countDone(content) {
+    return (content.match(/"incorretas"\s*:\s*\[[^\]]*\]/g) || []).length;
+  },
+
+  _streamRatio(content, quantidade, charsPerQuestion) {
+    const done = (content.match(/"incorretas"\s*:\s*\[[^\]]*\]/g) || []).length;
+    const byChars = content.length / (charsPerQuestion * quantidade);
+    const ceiling = Math.min((done + 1) / quantidade, 1) * 0.98;
+    return Math.min(Math.max(done / quantidade, Math.min(byChars, ceiling)), 1);
+  },
+
+  /**
+   * @param {Function} generateFn - (messages, onChunk) => Promise<JSON>
+   * @param {Function} onProgress - recebe { percent, phase }
+   */
+  async GENERATE_VALIDATED_QUIZ(
+    generateFn,
+    temas,
+    quantidade,
+    { onProgress = () => {}, maxRetries = 2 } = {}
+  ) {
+    const { WAITING_MAX, GENERATION_END, REGENERATION_END } = PROGRESS_CONFIG;
+    const charsPerQuestion = this._getCharsPerQuestion();
+    const { slots, messages } = this.GET_MESSAGES(temas, quantidade);
+
+    // ── Fase 1: geração principal ──
+    let totalChars = 0;
+    const raw = await generateFn(messages, (content) => {
+      totalChars = content.length;
+      const ratio = this._streamRatio(content, quantidade, charsPerQuestion);
+      onProgress({
+        phase: "generating",
+        percent: WAITING_MAX + ratio * (GENERATION_END - WAITING_MAX),
+        current: Math.min(this._countDone(content) + 1, quantidade),
+        total: quantidade,
+      });
+    });
+    this._saveCharsPerQuestion(totalChars / quantidade);
+
+    const perguntas = slots.map((_, i) => (raw.perguntas || [])[i] || null);
+    onProgress({ phase: "validating", percent: GENERATION_END });
+
+    // ── Fase 2: validação e regeneração ──
+    let base = GENERATION_END;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const failed = slots
         .map((slot, i) =>
@@ -143,15 +206,33 @@ ${QUIZ_EXAMPLE}`;
         } pergunta(s).`
       );
 
-      for (const i of failed) {
+      // Cada tentativa usa metade do espaço restante: a barra nunca "estoura"
+      const range = (REGENERATION_END - base) / 2;
+      const step = range / failed.length;
+
+      for (let k = 0; k < failed.length; k++) {
+        const i = failed[k];
+        const stepStart = base + k * step;
         const res = await generateFn(
-          this._buildSingleQuestionMessages(temas, slots[i])
+          this._buildSingleQuestionMessages(temas, slots[i]),
+          (content) => {
+            const ratio = this._streamRatio(content, 1, charsPerQuestion);
+            onProgress({
+              phase: "regenerating",
+              percent: stepStart + ratio * step,
+              current: k + 1,
+              total: failed.length,
+            });
+          }
         );
         if (res && res.perguntas && res.perguntas[0]) {
-          perguntas[i] = res.perguntas[0]; // revalidada no próximo loop
+          perguntas[i] = res.perguntas[0];
         }
       }
+      base += range;
     }
+
+    onProgress({ phase: "done", percent: REGENERATION_END });
 
     return {
       // eslint-disable-next-line no-unused-vars

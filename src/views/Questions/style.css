@@ -25,6 +25,13 @@
   font-size: 14px;
 }
 
+.progress-phase {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  text-align: center;
+  min-height: 1.4em; /* evita "pulo" do layout ao trocar o texto */
+}
+
 .accumulated-label {
   font-size: 0.8rem;
   font-weight: 700;

@@ -55,6 +55,7 @@
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
+            <p class="progress-phase" aria-live="polite">{{ phaseText }}</p>
             <div class="progress-container mx-auto">
               <div class="progress-fill" :style="{ width: progress + '%' }">
                 <span v-if="progress > 10" class="progress-text">
@@ -97,7 +98,7 @@
 
 <script>
 import { GAME_CONFIG } from "@/config/gameConfig";
-import { UI_TEXTS, MILLION_GAME_CONFIG } from "@/constants";
+import { UI_TEXTS, MILLION_GAME_CONFIG, PROGRESS_CONFIG } from "@/constants";
 import { generateFn } from "@/services/ollamaService";
 
 export default {
@@ -121,11 +122,28 @@ export default {
       score2: 0,
       activePlayer: 1,
       millionScore: 0,
+      targetProgress: 0,
+      receivedFirstToken: false,
+      phase: "waiting",
+      phaseCurrent: 0,
+      phaseTotal: 0,
     };
   },
   computed: {
     formattedMillionScore() {
       return this.millionScore.toLocaleString("pt-BR");
+    },
+    phaseText() {
+      const map = {
+        waiting: this.uiTexts.PHASE_WAITING,
+        generating: this.uiTexts.PHASE_GENERATING,
+        validating: this.uiTexts.PHASE_VALIDATING,
+        regenerating: this.uiTexts.PHASE_REGENERATING,
+        done: this.uiTexts.PHASE_DONE,
+      };
+      return (map[this.phase] || "")
+        .replace("{current}", this.phaseCurrent)
+        .replace("{total}", this.phaseTotal);
     },
   },
   watch: {
@@ -141,7 +159,7 @@ export default {
     await this.gerarPerguntasComIA();
   },
   beforeDestroy() {
-    this.stopTimeProgress();
+    this.stopProgressLoop();
   },
   methods: {
     loadPlayoffsData() {
@@ -166,26 +184,67 @@ export default {
     onMillionStateUpdated(newScore) {
       this.millionScore = newScore;
     },
-    startTimeProgress(totalQuestions) {
-      this.stopTimeProgress();
+
+    startProgressLoop() {
+      this.stopProgressLoop();
       this.progress = 0;
+      this.targetProgress = 0;
+      this.receivedFirstToken = false;
+      this.phase = "waiting";
+      this.phaseCurrent = 0;
+      this.phaseTotal = 0;
+
       const startTime = performance.now();
-      const estimatedTotalMs = totalQuestions * 3000;
-      const updateProgress = () => {
-        const elapsedMs = performance.now() - startTime;
-        if (elapsedMs <= estimatedTotalMs) {
-          this.progress = (elapsedMs / estimatedTotalMs) * 90;
-        } else {
-          const extraTimeMs = elapsedMs - estimatedTotalMs;
-          this.progress = 90 + (1 - Math.exp(-extraTimeMs / 6000)) * 8;
+
+      const tick = () => {
+        if (!this.receivedFirstToken) {
+          const elapsed = performance.now() - startTime;
+          this.targetProgress =
+            PROGRESS_CONFIG.WAITING_MAX * (1 - Math.exp(-elapsed / 5000));
         }
-        if (this.isLoading && this.progress < 99) {
-          this.animationFrameId = requestAnimationFrame(updateProgress);
+
+        const diff = this.targetProgress - this.progress;
+        if (diff > 0) {
+          this.progress = Math.min(
+            this.progress + Math.max(diff * 0.1, 0.05),
+            this.targetProgress
+          );
         }
+
+        this.animationFrameId = requestAnimationFrame(tick);
       };
-      this.animationFrameId = requestAnimationFrame(updateProgress);
+
+      this.animationFrameId = requestAnimationFrame(tick);
     },
-    stopTimeProgress() {
+
+    onQuizProgress({ percent, phase, current, total }) {
+      this.receivedFirstToken = true;
+      this.targetProgress = Math.max(this.targetProgress, percent);
+
+      this.phase = phase;
+      if (current) this.phaseCurrent = current;
+      if (total) this.phaseTotal = total;
+    },
+
+    finishProgress() {
+      this.receivedFirstToken = true;
+      this.targetProgress = 100;
+      this.phase = "done";
+
+      return new Promise((resolve) => {
+        const check = () => {
+          if (this.progress >= 99.5) {
+            this.progress = 100;
+            setTimeout(resolve, 250);
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        check();
+      });
+    },
+
+    stopProgressLoop() {
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
@@ -193,33 +252,35 @@ export default {
     },
     async gerarPerguntasComIA() {
       this.isLoading = true;
+
       const activeThemes = this.$route.query.themes
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
       const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
-      this.startTimeProgress(totalQuestions);
+
+      this.startProgressLoop();
 
       try {
         const iaJson = await GAME_CONFIG.GENERATE_VALIDATED_QUIZ(
           generateFn,
           activeThemes,
-          totalQuestions
+          totalQuestions,
+          { onProgress: this.onQuizProgress }
         );
 
-        this.questions = iaJson.perguntas.map((itemIA, index) => {
-          return this.formatarParaModeloDoJogo(itemIA, index);
-        });
+        this.questions = iaJson.perguntas.map((itemIA, index) =>
+          this.formatarParaModeloDoJogo(itemIA, index)
+        );
 
-        this.stopTimeProgress();
-        this.progress = 100;
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await this.finishProgress();
       } catch (error) {
         console.error("Erro ao gerar perguntas com IA:", error);
-        this.stopTimeProgress();
       } finally {
+        this.stopProgressLoop();
         this.isLoading = false;
       }
     },
+
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();

@@ -41,4 +41,11 @@ export const UI_TEXTS = Object.freeze({
   PLAYOFFS_TURN_LOST_TITLE: "ops! Você errou e perdeu a vez",
   PLAYOFFS_TURN_LOST_SUBTITLE: "Você perdeu metade dos seus pontos.",
   PLAYOFFS_CONTINUE_BUTTON: "Continuar Jogo",
+
+  //PROGRESS PHASES
+  PHASE_WAITING: "Preparando o LLama Tech...",
+  PHASE_GENERATING: "Gerando pergunta {current} de {total}...",
+  PHASE_VALIDATING: "Revisando as perguntas...",
+  PHASE_REGENERATING: "Refazendo pergunta {current} de {total}...",
+  PHASE_DONE: "Tudo pronto!",
 });

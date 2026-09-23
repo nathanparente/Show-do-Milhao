@@ -80,3 +80,11 @@ export const MILLION_GAME_CONFIG = Object.freeze({
   STORAGE_KEY: "millionScore",
   QUESTION_VALUE: 1000,
 });
+
+export const PROGRESS_CONFIG = Object.freeze({
+  STORAGE_KEY: "quizCharsPerQuestion",
+  DEFAULT_CHARS_PER_QUESTION: 450, // valor inicial; é recalibrado a cada partida
+  WAITING_MAX: 8, // % máximo enquanto espera o primeiro token
+  GENERATION_END: 85, // % ao terminar a geração principal
+  REGENERATION_END: 97, // % ao terminar as regenerações
+});
