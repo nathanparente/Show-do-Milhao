@@ -24,3 +24,22 @@
   font-weight: 700;
   font-size: 14px;
 }
+
+.accumulated-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.accumulated-value {
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+@media (max-width: 600px) {
+  .accumulated-value {
+    font-size: 1.2rem;
+  }
+}

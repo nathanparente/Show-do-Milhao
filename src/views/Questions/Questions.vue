@@ -17,10 +17,23 @@
           </template>
         </PlayOffs>
 
-        <v-row v-else align="center" justify="start" class="ma-0">
+        <v-row
+          v-else
+          align="center"
+          :justify="gameMode === 'million_game' ? 'space-between' : 'start'"
+          class="ma-0"
+        >
           <v-btn large fab color="white" @click="replaceState">
             <v-icon color="#012f6d">mdi-home</v-icon>
           </v-btn>
+
+          <div
+            v-if="gameMode === 'million_game'"
+            class="text-right white--text"
+          >
+            <div class="accumulated-label">TOTAL ACUMULADO</div>
+            <div class="accumulated-value">{{ formattedMillionScore }}</div>
+          </div>
         </v-row>
       </section>
 
@@ -63,6 +76,7 @@
             <QuestionsList
               :questions="questions"
               @playoffs-state-updated="onPlayoffsStateUpdated"
+              @million-state-updated="onMillionStateUpdated"
             />
           </v-col>
         </v-row>
@@ -82,7 +96,11 @@
 </template>
 
 <script>
-import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
+import {
+  GAME_CONFIG,
+  UI_TEXTS,
+  MILLION_GAME_CONFIG,
+} from "@/constants/gameConfig";
 
 export default {
   name: "Questions",
@@ -104,13 +122,20 @@ export default {
       score1: 0,
       score2: 0,
       activePlayer: 1,
+      millionScore: 0,
     };
+  },
+  computed: {
+    formattedMillionScore() {
+      return this.millionScore.toLocaleString("pt-BR");
+    },
   },
   watch: {
     "$route.params.questionId": {
       immediate: true,
       handler() {
         this.loadPlayoffsData();
+        this.loadMillionData();
       },
     },
   },
@@ -129,11 +154,10 @@ export default {
       this.score2 = parseInt(localStorage.getItem("score2")) || 0;
       this.activePlayer = parseInt(localStorage.getItem("activePlayer")) || 1;
     },
-    /**
-     * Recebe o estado atualizado do PlayOffs vindo do QuestionsList,
-     * garantindo reatividade da UI mesmo quando NÃO há navegação de rota
-     * (ex: ao usar o Truco "Dobrar a aposta", que mantém a mesma pergunta)
-     */
+    loadMillionData() {
+      const stored = localStorage.getItem(MILLION_GAME_CONFIG.STORAGE_KEY);
+      this.millionScore = parseInt(stored, 10) || 0;
+    },
     onPlayoffsStateUpdated(newState) {
       this.player1 = newState.player1;
       this.player2 = newState.player2;
@@ -141,12 +165,14 @@ export default {
       this.score2 = newState.score2;
       this.activePlayer = newState.activePlayer;
     },
+    onMillionStateUpdated(newScore) {
+      this.millionScore = newScore;
+    },
     startTimeProgress(totalQuestions) {
       this.stopTimeProgress();
       this.progress = 0;
       const startTime = performance.now();
       const estimatedTotalMs = totalQuestions * 2500;
-
       const updateProgress = () => {
         const elapsedMs = performance.now() - startTime;
         if (elapsedMs <= estimatedTotalMs) {
@@ -155,12 +181,10 @@ export default {
           const extraTimeMs = elapsedMs - estimatedTotalMs;
           this.progress = 90 + (1 - Math.exp(-extraTimeMs / 6000)) * 8;
         }
-
         if (this.isLoading && this.progress < 99) {
           this.animationFrameId = requestAnimationFrame(updateProgress);
         }
       };
-
       this.animationFrameId = requestAnimationFrame(updateProgress);
     },
     stopTimeProgress() {
@@ -175,7 +199,6 @@ export default {
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
       const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
-
       this.startTimeProgress(totalQuestions);
 
       try {
@@ -246,9 +269,7 @@ export default {
           probability: 5,
         },
       ];
-
       choices = choices.sort(() => Math.random() - 0.5);
-
       return {
         id: idIndex,
         question: itemIA.pergunta,
@@ -265,6 +286,7 @@ export default {
       localStorage.removeItem("activePlayer");
       localStorage.removeItem("p1Errored");
       localStorage.removeItem("p2Errored");
+      localStorage.removeItem(MILLION_GAME_CONFIG.STORAGE_KEY);
     },
     replaceState() {
       this.clearGameData();

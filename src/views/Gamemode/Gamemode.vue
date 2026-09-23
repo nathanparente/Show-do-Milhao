@@ -85,6 +85,8 @@
 </template>
 
 <script>
+import { MILLION_GAME_CONFIG } from "@/constants/gameConfig";
+
 export default {
   name: "Gamemode",
   data() {
@@ -101,11 +103,9 @@ export default {
   computed: {
     canProceed() {
       if (!this.selectedMode) return false;
-
       if (this.selectedMode === "playoffs") {
         return this.player1.trim().length > 0 && this.player2.trim().length > 0;
       }
-
       return true;
     },
   },
@@ -121,9 +121,16 @@ export default {
       if (this.selectedMode === "playoffs") {
         localStorage.setItem("player1", this.player1.trim());
         localStorage.setItem("player2", this.player2.trim());
+        localStorage.removeItem(MILLION_GAME_CONFIG.STORAGE_KEY);
+      } else if (this.selectedMode === "million_game") {
+        localStorage.removeItem("player1");
+        localStorage.removeItem("player2");
+        // Sempre inicia uma nova partida do Million Game zerada
+        localStorage.setItem(MILLION_GAME_CONFIG.STORAGE_KEY, "0");
       } else {
         localStorage.removeItem("player1");
         localStorage.removeItem("player2");
+        localStorage.removeItem(MILLION_GAME_CONFIG.STORAGE_KEY);
       }
 
       this.$router.push({ name: "Themes" });
