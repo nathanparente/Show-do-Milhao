@@ -6,8 +6,11 @@
         :is-last-question="isLastQuestion"
         :show-truco="isPlayoffsMode"
         :is-truco-disabled="trucoButtonDisabled"
+        :is-skip-disabled="isSkipDisabled"
+        :skips-remaining="skipsRemaining"
         @help-click="onHelpClick"
         @truco-click="handleTrucoClick"
+        @skip-click="handleSkip"
       />
       <GiveUpButton :show="isPlayoffsMode" @give-up="handleGiveUp" />
     </v-row>
@@ -46,8 +49,10 @@
 import { mapMutations } from "vuex";
 import { UI_TEXTS } from "@/constants/gameConfig";
 import playoffsMixin from "./mixins/playoffsMixin";
+import skipMixin from "./mixins/skipingMixin";
 import HelpButtons from "./components/HelpButtons.vue";
 import GiveUpButton from "./components/GiveUpButton.vue";
+import SkipButton from "./components/SkipButton.vue";
 import ChoicesList from "./components/ChoicesList.vue";
 
 export default {
@@ -63,7 +68,7 @@ export default {
     TrucoDialog: () =>
       import("@/components/QuestionsList/components/TrucoDialog.vue"),
   },
-  mixins: [playoffsMixin],
+  mixins: [playoffsMixin, skipMixin],
   props: {
     questions: {
       type: [Array, Object],
@@ -239,6 +244,7 @@ export default {
           return;
         }
 
+        this.resetActivePlayerSkips();
         this.switchActivePlayer();
         this.resetHelps();
         this.turnLostDialog = true;
@@ -262,6 +268,7 @@ export default {
         return;
       }
 
+      this.resetActivePlayerSkips();
       this.switchActivePlayer();
       this.resetHelps();
       this.giveUpDialog = true;
@@ -294,6 +301,7 @@ export default {
 
       this.markActivePlayerTrucoUsed();
       this.markActivePlayerHasPlayed();
+      this.resetActivePlayerSkips();
       this.switchActivePlayer();
       this.resetHelps();
       this.setTrucoBet("doubled");
@@ -358,6 +366,22 @@ export default {
       this.choices = this.choices.filter(
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
+    },
+    /**
+     * Pula a pergunta atual sem penalidade de pontuação.
+     * Não altera o jogador ativo (mesma jogada continua) e
+     * não conta como erro/acerto/desistência.
+     */
+    handleSkip() {
+      if (this.isSkipDisabled) return;
+
+      this.incrementSkipCount();
+
+      const currentId = parseInt(this.$route.params.questionId) || 1;
+
+      if (currentId < this.questions.length) {
+        this.$router.push(`/questions/${currentId + 1}`);
+      }
     },
     replaceState() {
       this.$store.replaceState({ callHelp: "" });
