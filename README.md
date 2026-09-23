@@ -75,6 +75,21 @@ Ajuda de **uso único por jogador** (assim como Cartas, Gepeto e Universitários
   - Se **errar**: perde **20 pontos** fixos, seguindo a mesma regra de troca de turno / fim de jogo do erro comum.
   - O efeito da aposta dobrada é válido **somente para essa pergunta específica**, não persistindo para as perguntas seguintes.
 
+#### Botão "Pulo"
+
+Disponível em **ambos os modos de jogo** (Clássico/Corrida do Milhão e PlayOffs). Permite ao jogador pular a pergunta atual e avançar diretamente para a próxima, **sem sofrer qualquer penalidade de pontuação**.
+
+- Cada jogador possui direito a **até 3 pulos por partida**.
+- No modo **PlayOffs**, o contador de pulos é **individual por jogador** e é **reiniciado automaticamente** ao final do turno (erro, desistência ou Truco dobrado), voltando a 3 pulos disponíveis quando o jogador assumir o controle novamente.
+- No modo **Corrida do Milhão**, o contador é único durante toda a partida, já que não há troca de turnos.
+- Os dados de uso são armazenados em cache (`localStorage`) e **limpos automaticamente**:
+  - Ao final do turno do jogador (apenas no modo PlayOffs);
+  - Ao final da partida (vitória ou Game Over), em ambos os modos.
+- O botão é **desabilitado automaticamente** conforme a proximidade do fim da partida, para evitar que o jogador finalize o jogo sem responder a nenhuma pergunta:
+  - **Faltando 3 perguntas** para o fim: desabilitado caso o jogador ainda possua os **3 pulos** disponíveis.
+  - **Faltando 2 perguntas** para o fim: desabilitado caso o jogador ainda possua **2 ou 3 pulos** disponíveis.
+  - **Na última pergunta** (Pergunta do Milhão): **sempre desabilitado**, independentemente da quantidade de pulos restantes.
+
 #### Tela de Fim de Jogo (Game Over)
 
 Ao final da partida (por eliminação de ambos os jogadores), o usuário é redirecionado para uma tela de **ranking**, exibindo:
