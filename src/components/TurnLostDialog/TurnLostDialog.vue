@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { UI_TEXTS } from "@/constants/gameConfig";
+import { UI_TEXTS } from "@/constants";
 
 export default {
   name: "TurnLostDialog",

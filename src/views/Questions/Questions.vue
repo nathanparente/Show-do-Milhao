@@ -96,11 +96,9 @@
 </template>
 
 <script>
-import {
-  GAME_CONFIG,
-  UI_TEXTS,
-  MILLION_GAME_CONFIG,
-} from "@/constants/gameConfig";
+import { GAME_CONFIG } from "@/config/gameConfig";
+import { UI_TEXTS, MILLION_GAME_CONFIG } from "@/constants";
+import { generateFn } from "@/services/ollamaService";
 
 export default {
   name: "Questions",
@@ -172,7 +170,7 @@ export default {
       this.stopTimeProgress();
       this.progress = 0;
       const startTime = performance.now();
-      const estimatedTotalMs = totalQuestions * 2500;
+      const estimatedTotalMs = totalQuestions * 3000;
       const updateProgress = () => {
         const elapsedMs = performance.now() - startTime;
         if (elapsedMs <= estimatedTotalMs) {
@@ -202,23 +200,11 @@ export default {
       this.startTimeProgress(totalQuestions);
 
       try {
-        const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: GAME_CONFIG.MODEL_NAME,
-            format: "json",
-            stream: false,
-            options: {
-              temperature: GAME_CONFIG.TEMPERATURE,
-              num_ctx: 4096,
-            },
-            prompt: GAME_CONFIG.GET_PROMPT(activeThemes, totalQuestions),
-          }),
-        });
-
-        const data = await response.json();
-        const iaJson = JSON.parse(data.response);
+        const iaJson = await GAME_CONFIG.GENERATE_VALIDATED_QUIZ(
+          generateFn,
+          activeThemes,
+          totalQuestions
+        );
 
         this.questions = iaJson.perguntas.map((itemIA, index) => {
           return this.formatarParaModeloDoJogo(itemIA, index);
@@ -269,7 +255,7 @@ export default {
           probability: 5,
         },
       ];
-      choices = choices.sort(() => Math.random() - 0.5);
+      choices = GAME_CONFIG._shuffleArray(choices);
       return {
         id: idIndex,
         question: itemIA.pergunta,

@@ -50,7 +50,7 @@
 
 <script>
 import { mapMutations } from "vuex";
-import { UI_TEXTS } from "@/constants/gameConfig";
+import { UI_TEXTS } from "@/constants";
 import playoffsMixin from "./mixins/playoffsMixin";
 import skipMixin from "./mixins/skipingMixin";
 import millionMixin from "./mixins/millionMixin";

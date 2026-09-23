@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { MILLION_GAME_CONFIG } from "@/constants/gameConfig";
+import { MILLION_GAME_CONFIG } from "@/constants";
 
 export default {
   name: "GoldBars",

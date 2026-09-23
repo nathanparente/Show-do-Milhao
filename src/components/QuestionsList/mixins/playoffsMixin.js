@@ -1,4 +1,4 @@
-import { PLAYOFFS_SCORING } from "@/constants/gameConfig";
+import { PLAYOFFS_SCORING } from "@/constants";
 
 /**
  * Mixin responsável por toda a lógica de estado e regras de negócio

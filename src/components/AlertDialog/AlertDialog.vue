@@ -36,7 +36,8 @@
 </template>
 
 <script>
-import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
+import { GAME_CONFIG } from "@/config/gameConfig";
+import { UI_TEXTS } from "@/constants";
 
 export default {
   name: "AlertDialog",
