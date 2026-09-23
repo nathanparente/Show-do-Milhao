@@ -6,10 +6,13 @@
         :is-last-question="isLastQuestion"
         :show-truco="isPlayoffsMode"
         :is-truco-disabled="trucoButtonDisabled"
+        :is-skip-disabled="isSkipDisabled"
+        :skips-remaining="skipsRemaining"
         @help-click="onHelpClick"
         @truco-click="handleTrucoClick"
+        @skip-click="handleSkip"
       />
-      <GiveUpButton :show="isPlayoffsMode" @give-up="handleGiveUp" />
+      <GiveUpButton :show="showGiveUpButton" @give-up="handleGiveUp" />
     </v-row>
 
     <ChoicesList
@@ -20,9 +23,14 @@
       @select="handleAnswers"
     />
 
+    <!-- BARRAS DE OURO — EXIBIDO APENAS NO MODO MILLION GAME -->
+    <GoldBars v-if="isMillionMode" :score="millionScore" />
+
     <AlertDialog
       :dialog="dialog"
       :score="parseInt($route.params.questionId - 1)"
+      :is-million-mode="isMillionMode"
+      :final-million-score="millionScore"
     />
     <HelpCard @apply-cartas="removeWrongChoices" />
     <TurnLostDialog
@@ -32,8 +40,6 @@
       @continue="proceedAfterTurnLost"
     />
     <GiveUpDialog :dialog="giveUpDialog" @continue="proceedAfterGiveUp" />
-
-    <!-- Modal do Truco -->
     <TrucoDialog
       :dialog="trucoDialog"
       @accept="handleTrucoAccept"
@@ -44,11 +50,14 @@
 
 <script>
 import { mapMutations } from "vuex";
-import { UI_TEXTS } from "@/constants/gameConfig";
+import { UI_TEXTS } from "@/constants";
 import playoffsMixin from "./mixins/playoffsMixin";
+import skipMixin from "./mixins/skipingMixin";
+import millionMixin from "./mixins/millionMixin";
 import HelpButtons from "./components/HelpButtons.vue";
 import GiveUpButton from "./components/GiveUpButton.vue";
 import ChoicesList from "./components/ChoicesList.vue";
+import GoldBars from "./components/GoldBars.vue";
 
 export default {
   name: "QuestionsList",
@@ -56,6 +65,7 @@ export default {
     HelpButtons,
     GiveUpButton,
     ChoicesList,
+    GoldBars,
     AlertDialog: () => import("@/components/AlertDialog/AlertDialog"),
     HelpCard: () => import("@/components/HelpCard/HelpCard"),
     TurnLostDialog: () => import("@/components/TurnLostDialog/TurnLostDialog"),
@@ -63,7 +73,7 @@ export default {
     TrucoDialog: () =>
       import("@/components/QuestionsList/components/TrucoDialog.vue"),
   },
-  mixins: [playoffsMixin],
+  mixins: [playoffsMixin, skipMixin, millionMixin],
   props: {
     questions: {
       type: [Array, Object],
@@ -123,12 +133,11 @@ export default {
         this.currentIndex === this.questions.length - 1
       );
     },
-    /**
-     * O botão Truco fica desabilitado se já houver uma aposta ativa
-     * na jogada atual (simples ou dobrada)
-     */
     trucoButtonDisabled() {
       return !!this.trucoBet || this.hasActivePlayerUsedTruco;
+    },
+    showGiveUpButton() {
+      return this.isPlayoffsMode || this.isMillionMode;
     },
   },
   watch: {
@@ -146,13 +155,14 @@ export default {
   },
   created() {
     this.initPlayoffsState();
-    this.emitPlayoffsStateUpdate(); // garante que o pai receba o estado inicial ao montar
+    this.emitPlayoffsStateUpdate();
+    this.initMillionState();
+    this.emitMillionStateUpdate();
   },
   methods: {
     loadQuestion() {
       this.choice = null;
       this.color = "#efefef";
-
       if (this.currentQuestion && this.currentQuestion.choices) {
         this.choices = [...this.currentQuestion.choices];
       }
@@ -189,10 +199,11 @@ export default {
         const points = this.getPointsToWin();
         this.addScoreToActivePlayer(points);
         this.markActivePlayerHasPlayed();
-
-        // O efeito do Truco (simple OU doubled) vale SOMENTE para esta pergunta.
-        // Sempre limpamos ao resolver, independente do tipo de aposta.
         this.clearTrucoBet();
+      }
+
+      if (this.isMillionMode) {
+        this.addMillionPoints();
       }
 
       const currentId = parseInt(this.$route.params.questionId) || 1;
@@ -207,7 +218,6 @@ export default {
     wrongQuestion() {
       if (this.isPlayoffsMode) {
         const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
-
         let playerName;
         let newScore;
 
@@ -227,11 +237,8 @@ export default {
 
         this.turnLostPlayerName = playerName;
         this.turnLostNewScore = newScore;
-
         this.markActivePlayerAsFailed();
         this.markActivePlayerHasPlayed();
-
-        // O efeito do Truco vale SOMENTE para esta pergunta - sempre limpa
         this.clearTrucoBet();
 
         if (otherPlayerAlreadyPlayed) {
@@ -239,65 +246,64 @@ export default {
           return;
         }
 
+        this.resetActivePlayerSkips();
         this.switchActivePlayer();
         this.resetHelps();
         this.turnLostDialog = true;
       } else {
+        if (this.isMillionMode) {
+          this.halveMillionScore();
+        }
         this.clearGameData();
         this.replaceState();
         this.dialog = true;
       }
     },
     handleGiveUp() {
-      if (!this.isPlayoffsMode) return;
+      if (this.isPlayoffsMode) {
+        const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
+        this.markActivePlayerAsFailed();
+        this.markActivePlayerHasPlayed();
+        this.clearTrucoBet();
 
-      const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
+        if (otherPlayerAlreadyPlayed) {
+          this.$router.push({ name: "gameover" });
+          return;
+        }
 
-      this.markActivePlayerAsFailed();
-      this.markActivePlayerHasPlayed();
-      this.clearTrucoBet();
-
-      if (otherPlayerAlreadyPlayed) {
-        this.$router.push({ name: "gameover" });
+        this.resetActivePlayerSkips();
+        this.switchActivePlayer();
+        this.resetHelps();
+        this.giveUpDialog = true;
         return;
       }
 
-      this.switchActivePlayer();
-      this.resetHelps();
-      this.giveUpDialog = true;
+      if (this.isMillionMode) {
+        // Valor permanece intacto — apenas encerra a partida
+        this.clearGameData();
+        this.replaceState();
+        this.dialog = true;
+      }
     },
-    /**
-     * Abre o modal do Truco
-     */
     handleTrucoClick() {
       if (!this.isPlayoffsMode) return;
-      if (this.trucoBet) return; // já há aposta ativa nesta pergunta
-      if (this.hasActivePlayerUsedTruco) return; // já usou seu truco na partida
+      if (this.trucoBet) return;
+      if (this.hasActivePlayerUsedTruco) return;
       this.trucoDialog = true;
     },
-    /**
-     * Jogador ACEITA o truco: joga a PERGUNTA ATUAL com risco/prêmio dobrado.
-     * Consome o uso único do Truco desse jogador.
-     */
     handleTrucoAccept() {
       this.trucoDialog = false;
       this.markActivePlayerTrucoUsed();
       this.setTrucoBet("simple");
     },
-    /**
-     * Jogador DOBRA A APOSTA: encerra o turno sem jogar,
-     * mantém pontuação intacta, passa a vez para o próximo jogador
-     * que jogará sob risco/prêmio dobrado até errar ou desistir
-     */
     handleTrucoDoubleDown() {
       this.trucoDialog = false;
-
       this.markActivePlayerTrucoUsed();
       this.markActivePlayerHasPlayed();
+      this.resetActivePlayerSkips();
       this.switchActivePlayer();
       this.resetHelps();
       this.setTrucoBet("doubled");
-
       this.choice = null;
       this.color = "#efefef";
     },
@@ -358,6 +364,14 @@ export default {
       this.choices = this.choices.filter(
         (item) => item.isTrue || wrongToKeep.includes(item)
       );
+    },
+    handleSkip() {
+      if (this.isSkipDisabled) return;
+      this.incrementSkipCount();
+      const currentId = parseInt(this.$route.params.questionId) || 1;
+      if (currentId < this.questions.length) {
+        this.$router.push(`/questions/${currentId + 1}`);
+      }
     },
     replaceState() {
       this.$store.replaceState({ callHelp: "" });

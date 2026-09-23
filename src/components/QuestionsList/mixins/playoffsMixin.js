@@ -1,4 +1,4 @@
-import { PLAYOFFS_SCORING } from "@/constants/gameConfig";
+import { PLAYOFFS_SCORING } from "@/constants";
 
 /**
  * Mixin responsável por toda a lógica de estado e regras de negócio
@@ -74,6 +74,7 @@ export default {
       localStorage.removeItem("trucoBet");
       localStorage.removeItem("p1TrucoUsed");
       localStorage.removeItem("p2TrucoUsed");
+      this.clearSkipData();
     },
     initPlayoffsState() {
       const qId = parseInt(this.$route.params.questionId) || 1;
@@ -111,6 +112,7 @@ export default {
         localStorage.setItem("trucoBet", "");
         localStorage.setItem("p1TrucoUsed", "false");
         localStorage.setItem("p2TrucoUsed", "false");
+        this.clearSkipData();
       }
     },
     /**

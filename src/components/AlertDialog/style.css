@@ -18,6 +18,21 @@
   margin-top: 8px;
 }
 
+.modal-million-score {
+  font-size: 16px;
+  color: #424242;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.modal-million-score strong {
+  color: #b8860b;
+  font-weight: 900;
+}
+
 .modal-btn {
   font-weight: 700;
   letter-spacing: 0.5px;

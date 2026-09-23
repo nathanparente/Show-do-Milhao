@@ -16,8 +16,8 @@
 
 /* Wrapper com largura fixa para os 3 botões de ajuda */
 .help-buttons-wrapper {
-  width: 360px; /* ajuste conforme necessidade de design */
-  max-width: 360px;
+  width: 460px; /* ajuste conforme necessidade de design */
+  max-width: 460px;
   flex: 0 0 auto;
 }
 

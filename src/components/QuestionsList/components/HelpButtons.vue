@@ -19,6 +19,13 @@
         </v-btn>
       </v-col>
 
+      <!-- Botão Pulo: disponível em ambos os modos -->
+      <SkipButton
+        :disabled="isSkipDisabled"
+        :skips-remaining="skipsRemaining"
+        @skip="$emit('skip-click')"
+      />
+
       <!-- Botão Truco: exclusivo do modo PlayOffs -->
       <v-col
         v-if="showTruco"
@@ -41,8 +48,11 @@
 </template>
 
 <script>
+import SkipButton from "./SkipButton.vue";
+
 export default {
   name: "HelpButtons",
+  components: { SkipButton },
   props: {
     buttons: {
       type: Array,
@@ -59,6 +69,14 @@ export default {
     isTrucoDisabled: {
       type: Boolean,
       default: false,
+    },
+    isSkipDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    skipsRemaining: {
+      type: Number,
+      default: 3,
     },
   },
   methods: {

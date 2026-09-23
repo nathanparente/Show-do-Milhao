@@ -88,7 +88,7 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
-import { UI_TEXTS } from "@/constants/gameConfig";
+import { UI_TEXTS } from "@/constants";
 
 export default {
   name: "HelpCard",

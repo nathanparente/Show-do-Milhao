@@ -11,6 +11,13 @@
           {{ modalText }}
         </v-card-text>
 
+        <v-card-text v-if="isMillionMode" class="modal-million-score">
+          <v-icon color="#d4a017" class="mr-1">mdi-gold</v-icon>
+          {{ lostMillionGame }}
+          <strong>{{ formattedMillionScore }}</strong>
+          acumulados
+        </v-card-text>
+
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -29,7 +36,8 @@
 </template>
 
 <script>
-import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
+import { GAME_CONFIG } from "@/config/gameConfig";
+import { UI_TEXTS } from "@/constants";
 
 export default {
   name: "AlertDialog",
@@ -44,12 +52,26 @@ export default {
       required: true,
       default: 0,
     },
+    isMillionMode: {
+      type: Boolean,
+      default: false,
+    },
+    finalMillionScore: {
+      type: Number,
+      default: 0,
+    },
   },
   data() {
     return {
       totalQuestions: GAME_CONFIG.TOTAL_QUESTIONS,
       modalText: UI_TEXTS.LOST_GAME_MODAL_TEXT,
+      lostMillionGame: UI_TEXTS.LOST_MILLION_GAME_TEXT,
     };
+  },
+  computed: {
+    formattedMillionScore() {
+      return this.finalMillionScore.toLocaleString("pt-BR");
+    },
   },
   methods: {
     wrongQuestion() {

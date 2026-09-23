@@ -17,10 +17,23 @@
           </template>
         </PlayOffs>
 
-        <v-row v-else align="center" justify="start" class="ma-0">
+        <v-row
+          v-else
+          align="center"
+          :justify="gameMode === 'million_game' ? 'space-between' : 'start'"
+          class="ma-0"
+        >
           <v-btn large fab color="white" @click="replaceState">
             <v-icon color="#012f6d">mdi-home</v-icon>
           </v-btn>
+
+          <div
+            v-if="gameMode === 'million_game'"
+            class="text-right white--text"
+          >
+            <div class="accumulated-label">TOTAL ACUMULADO</div>
+            <div class="accumulated-value">{{ formattedMillionScore }}</div>
+          </div>
         </v-row>
       </section>
 
@@ -42,6 +55,7 @@
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
+            <p class="progress-phase" aria-live="polite">{{ phaseText }}</p>
             <div class="progress-container mx-auto">
               <div class="progress-fill" :style="{ width: progress + '%' }">
                 <span v-if="progress > 10" class="progress-text">
@@ -63,6 +77,7 @@
             <QuestionsList
               :questions="questions"
               @playoffs-state-updated="onPlayoffsStateUpdated"
+              @million-state-updated="onMillionStateUpdated"
             />
           </v-col>
         </v-row>
@@ -82,7 +97,9 @@
 </template>
 
 <script>
-import { GAME_CONFIG, UI_TEXTS } from "@/constants/gameConfig";
+import { GAME_CONFIG } from "@/config/gameConfig";
+import { UI_TEXTS, MILLION_GAME_CONFIG, PROGRESS_CONFIG } from "@/constants";
+import { generateFn } from "@/services/ollamaService";
 
 export default {
   name: "Questions",
@@ -104,13 +121,37 @@ export default {
       score1: 0,
       score2: 0,
       activePlayer: 1,
+      millionScore: 0,
+      targetProgress: 0,
+      receivedFirstToken: false,
+      phase: "waiting",
+      phaseCurrent: 0,
+      phaseTotal: 0,
     };
+  },
+  computed: {
+    formattedMillionScore() {
+      return this.millionScore.toLocaleString("pt-BR");
+    },
+    phaseText() {
+      const map = {
+        waiting: this.uiTexts.PHASE_WAITING,
+        generating: this.uiTexts.PHASE_GENERATING,
+        validating: this.uiTexts.PHASE_VALIDATING,
+        regenerating: this.uiTexts.PHASE_REGENERATING,
+        done: this.uiTexts.PHASE_DONE,
+      };
+      return (map[this.phase] || "")
+        .replace("{current}", this.phaseCurrent)
+        .replace("{total}", this.phaseTotal);
+    },
   },
   watch: {
     "$route.params.questionId": {
       immediate: true,
       handler() {
         this.loadPlayoffsData();
+        this.loadMillionData();
       },
     },
   },
@@ -118,7 +159,7 @@ export default {
     await this.gerarPerguntasComIA();
   },
   beforeDestroy() {
-    this.stopTimeProgress();
+    this.stopProgressLoop();
   },
   methods: {
     loadPlayoffsData() {
@@ -129,11 +170,10 @@ export default {
       this.score2 = parseInt(localStorage.getItem("score2")) || 0;
       this.activePlayer = parseInt(localStorage.getItem("activePlayer")) || 1;
     },
-    /**
-     * Recebe o estado atualizado do PlayOffs vindo do QuestionsList,
-     * garantindo reatividade da UI mesmo quando NÃO há navegação de rota
-     * (ex: ao usar o Truco "Dobrar a aposta", que mantém a mesma pergunta)
-     */
+    loadMillionData() {
+      const stored = localStorage.getItem(MILLION_GAME_CONFIG.STORAGE_KEY);
+      this.millionScore = parseInt(stored, 10) || 0;
+    },
     onPlayoffsStateUpdated(newState) {
       this.player1 = newState.player1;
       this.player2 = newState.player2;
@@ -141,29 +181,70 @@ export default {
       this.score2 = newState.score2;
       this.activePlayer = newState.activePlayer;
     },
-    startTimeProgress(totalQuestions) {
-      this.stopTimeProgress();
+    onMillionStateUpdated(newScore) {
+      this.millionScore = newScore;
+    },
+
+    startProgressLoop() {
+      this.stopProgressLoop();
       this.progress = 0;
+      this.targetProgress = 0;
+      this.receivedFirstToken = false;
+      this.phase = "waiting";
+      this.phaseCurrent = 0;
+      this.phaseTotal = 0;
+
       const startTime = performance.now();
-      const estimatedTotalMs = totalQuestions * 2500;
 
-      const updateProgress = () => {
-        const elapsedMs = performance.now() - startTime;
-        if (elapsedMs <= estimatedTotalMs) {
-          this.progress = (elapsedMs / estimatedTotalMs) * 90;
-        } else {
-          const extraTimeMs = elapsedMs - estimatedTotalMs;
-          this.progress = 90 + (1 - Math.exp(-extraTimeMs / 6000)) * 8;
+      const tick = () => {
+        if (!this.receivedFirstToken) {
+          const elapsed = performance.now() - startTime;
+          this.targetProgress =
+            PROGRESS_CONFIG.WAITING_MAX * (1 - Math.exp(-elapsed / 5000));
         }
 
-        if (this.isLoading && this.progress < 99) {
-          this.animationFrameId = requestAnimationFrame(updateProgress);
+        const diff = this.targetProgress - this.progress;
+        if (diff > 0) {
+          this.progress = Math.min(
+            this.progress + Math.max(diff * 0.1, 0.05),
+            this.targetProgress
+          );
         }
+
+        this.animationFrameId = requestAnimationFrame(tick);
       };
 
-      this.animationFrameId = requestAnimationFrame(updateProgress);
+      this.animationFrameId = requestAnimationFrame(tick);
     },
-    stopTimeProgress() {
+
+    onQuizProgress({ percent, phase, current, total }) {
+      this.receivedFirstToken = true;
+      this.targetProgress = Math.max(this.targetProgress, percent);
+
+      this.phase = phase;
+      if (current) this.phaseCurrent = current;
+      if (total) this.phaseTotal = total;
+    },
+
+    finishProgress() {
+      this.receivedFirstToken = true;
+      this.targetProgress = 100;
+      this.phase = "done";
+
+      return new Promise((resolve) => {
+        const check = () => {
+          if (this.progress >= 99.5) {
+            this.progress = 100;
+            setTimeout(resolve, 250);
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        check();
+      });
+    },
+
+    stopProgressLoop() {
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
@@ -171,46 +252,35 @@ export default {
     },
     async gerarPerguntasComIA() {
       this.isLoading = true;
+
       const activeThemes = this.$route.query.themes
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
       const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
 
-      this.startTimeProgress(totalQuestions);
+      this.startProgressLoop();
 
       try {
-        const response = await fetch(GAME_CONFIG.OLLAMA_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: GAME_CONFIG.MODEL_NAME,
-            format: "json",
-            stream: false,
-            options: {
-              temperature: GAME_CONFIG.TEMPERATURE,
-              num_ctx: 4096,
-            },
-            prompt: GAME_CONFIG.GET_PROMPT(activeThemes, totalQuestions),
-          }),
-        });
+        const iaJson = await GAME_CONFIG.GENERATE_VALIDATED_QUIZ(
+          generateFn,
+          activeThemes,
+          totalQuestions,
+          { onProgress: this.onQuizProgress }
+        );
 
-        const data = await response.json();
-        const iaJson = JSON.parse(data.response);
+        this.questions = iaJson.perguntas.map((itemIA, index) =>
+          this.formatarParaModeloDoJogo(itemIA, index)
+        );
 
-        this.questions = iaJson.perguntas.map((itemIA, index) => {
-          return this.formatarParaModeloDoJogo(itemIA, index);
-        });
-
-        this.stopTimeProgress();
-        this.progress = 100;
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await this.finishProgress();
       } catch (error) {
         console.error("Erro ao gerar perguntas com IA:", error);
-        this.stopTimeProgress();
       } finally {
+        this.stopProgressLoop();
         this.isLoading = false;
       }
     },
+
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
@@ -246,9 +316,7 @@ export default {
           probability: 5,
         },
       ];
-
-      choices = choices.sort(() => Math.random() - 0.5);
-
+      choices = GAME_CONFIG._shuffleArray(choices);
       return {
         id: idIndex,
         question: itemIA.pergunta,
@@ -265,6 +333,7 @@ export default {
       localStorage.removeItem("activePlayer");
       localStorage.removeItem("p1Errored");
       localStorage.removeItem("p2Errored");
+      localStorage.removeItem(MILLION_GAME_CONFIG.STORAGE_KEY);
     },
     replaceState() {
       this.clearGameData();
