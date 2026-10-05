@@ -1,26 +1,30 @@
 <template>
   <v-col cols="auto" class="help-buttons-wrapper">
     <v-row justify="space-between" align="center" no-gutters>
-      <v-col
-        v-for="(btn, index) in buttons"
-        :key="btn.id"
-        cols="auto"
-        class="d-flex justify-center align-center"
-      >
-        <v-btn
-          :id="btn.id"
-          :disabled="isButtonDisabled(btn)"
-          large
-          fab
-          color="white"
-          @click="$emit('help-click', { id: btn.id, index })"
+      <template v-for="(btn, index) in buttons">
+        <!-- Gepeto fica oculto no modo Playoffs -->
+        <v-col
+          v-if="isButtonVisible(btn)"
+          :key="btn.id"
+          cols="auto"
+          class="d-flex justify-center align-center"
         >
-          <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
-        </v-btn>
-      </v-col>
+          <v-btn
+            :id="btn.id"
+            :disabled="isButtonDisabled(btn)"
+            large
+            fab
+            color="white"
+            @click="$emit('help-click', { id: btn.id, index })"
+          >
+            <v-icon color="#012f6d">{{ btn.icon }}</v-icon>
+          </v-btn>
+        </v-col>
+      </template>
 
-      <!-- Botão Pulo: disponível em ambos os modos -->
+      <!-- Botão Pulo: oculto no modo Playoffs -->
       <SkipButton
+        v-if="!isPlayoffsMode"
         :disabled="isSkipDisabled"
         :skips-remaining="skipsRemaining"
         @skip="$emit('skip-click')"
@@ -54,32 +58,21 @@ export default {
   name: "HelpButtons",
   components: { SkipButton },
   props: {
-    buttons: {
-      type: Array,
-      required: true,
-    },
-    isLastQuestion: {
-      type: Boolean,
-      default: false,
-    },
-    showTruco: {
-      type: Boolean,
-      default: false,
-    },
-    isTrucoDisabled: {
-      type: Boolean,
-      default: false,
-    },
-    isSkipDisabled: {
-      type: Boolean,
-      default: false,
-    },
-    skipsRemaining: {
-      type: Number,
-      default: 3,
-    },
+    buttons: { type: Array, required: true },
+    isLastQuestion: { type: Boolean, default: false },
+    isPlayoffsMode: { type: Boolean, default: false }, // NOVA
+    showTruco: { type: Boolean, default: false },
+    isTrucoDisabled: { type: Boolean, default: false },
+    isSkipDisabled: { type: Boolean, default: false },
+    skipsRemaining: { type: Number, default: 3 },
   },
   methods: {
+    isButtonVisible(btn) {
+      if (btn.id === "btn-gepeto" && this.isPlayoffsMode) {
+        return false;
+      }
+      return true;
+    },
     isButtonDisabled(btn) {
       if (btn.id === "btn-gepeto" && this.isLastQuestion) {
         return true;

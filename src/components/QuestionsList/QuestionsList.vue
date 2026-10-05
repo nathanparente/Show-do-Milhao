@@ -4,6 +4,7 @@
       <HelpButtons
         :buttons="buttons"
         :is-last-question="isLastQuestion"
+        :is-playoffs-mode="isPlayoffsMode"
         :show-truco="isPlayoffsMode"
         :is-truco-disabled="trucoButtonDisabled"
         :is-skip-disabled="isSkipDisabled"
