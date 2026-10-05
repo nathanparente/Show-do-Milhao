@@ -265,7 +265,7 @@ export default {
           generateFn,
           activeThemes,
           totalQuestions,
-          { onProgress: this.onQuizProgress }
+          { onProgress: this.onQuizProgress, maxRetries: 0 }
         );
 
         this.questions = iaJson.perguntas.map((itemIA, index) =>

@@ -9,7 +9,7 @@ export const SYSTEM_PROMPT = `Você é um Arquiteto de Software Sênior e especi
 ## Regras das alternativas
 - "correta": verdadeira sem exceções.
 - "incorretas": exatamente 3, falsas em qualquer contexto, mas plausíveis para um desenvolvedor real (erros de confusão comum, nunca absurdas).
-- As 4 alternativas têm de 4 a 10 palavras, a mesma estrutura gramatical e tamanho semelhante. A correta NÃO pode ser a mais longa.
+- As 4 alternativas têm de 4 a 6 palavras, a mesma estrutura gramatical e tamanho semelhante. A correta NÃO pode ser a mais longa.
 - Sem sinônimos entre alternativas, sem prefixos como "A)" ou "1.".
 
 ## Processo

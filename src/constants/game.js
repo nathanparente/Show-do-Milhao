@@ -1,4 +1,4 @@
-export const TOTAL_QUESTIONS = 15;
+export const TOTAL_QUESTIONS = 20;
 
 export const THEMES = Object.freeze(["Desenvolvimento Web", "UI/UX", "CRO"]);
 
