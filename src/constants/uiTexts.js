@@ -96,11 +96,11 @@ export const UI_TEXTS = Object.freeze({
 
   INSTRUCTIONS_TRUCO_TITLE: "Truco (Playoffs)",
   INSTRUCTIONS_TRUCO_TEXT_1:
-    "Exclusivo do modo Playoffs. Na sua vez, se o outro jogador achar que você não sabe a resposta, ele pode pedir “truco”.",
+    "Só nos Playoffs: na sua vez, o adversário pode pedir “truco” e isso muda a dinâmica do jogo.",
   INSTRUCTIONS_TRUCO_TEXT_2:
-    "Se você aceitar e acertar, ganha {truco_simple_win} pontos; se errar, perde metade dos pontos e mais {truco_simple_penalty} pontos do saldo restante.",
+    "Ao aceitar: acerte e ganhe {truco_simple_win} pts; erre e perca metade dos pontos + {truco_simple_penalty} pts do saldo.",
   INSTRUCTIONS_TRUCO_TEXT_3:
-    "Se quiser “dobrar a aposta”, você perde a vez e passa para o adversário: se ele acertar, ganha {truco_double_win} pontos; se errar, perde {truco_doubled_penalty} pontos.",
+    "Ao “dobrar”, a vez vai para o adversário: acerto vale +{truco_double_win} pts; erro tira {truco_doubled_penalty} pts.",
   INSTRUCTIONS_GIVEUP_TITLE: "Desistir",
   INSTRUCTIONS_GIVEUP_TEXT:
     "Se o jogador da vez quiser desistir, ele não perde pontos e passa a vez.",

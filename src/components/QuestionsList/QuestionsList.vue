@@ -46,6 +46,7 @@
       @accept="handleTrucoAccept"
       @double-down="handleTrucoDoubleDown"
     />
+    <TimeOutDialog :dialog="timeOutDialog" @continue="proceedAfterTimeOut" />
   </section>
 </template>
 
@@ -73,6 +74,7 @@ export default {
     GiveUpDialog: () => import("@/components/GiveUpDialog/GiveUpDialog"),
     TrucoDialog: () =>
       import("@/components/QuestionsList/components/TrucoDialog.vue"),
+    TimeOutDialog: () => import("@/components/TimeOutDialog/TimeOutDialog"), // IMPORTA O NOVO MODAL
   },
   mixins: [playoffsMixin, skipMixin, millionMixin],
   props: {
@@ -89,6 +91,7 @@ export default {
       turnLostNewScore: 0,
       giveUpDialog: false,
       trucoDialog: false,
+      timeOutDialog: false,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
       buttons: [
@@ -202,13 +205,18 @@ export default {
         this.markActivePlayerHasPlayed();
         this.clearTrucoBet();
       }
-
       if (this.isMillionMode) {
         this.addMillionPoints();
       }
 
       const currentId = parseInt(this.$route.params.questionId) || 1;
-      if (currentId < this.questions.length) {
+
+      // Garante que questions é um array válido antes de checar o tamanho
+      const totalQuestions = Array.isArray(this.questions)
+        ? this.questions.length
+        : 0;
+
+      if (totalQuestions > 0 && currentId < totalQuestions) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
         this.clearGameData();
@@ -285,6 +293,32 @@ export default {
         this.replaceState();
         this.dialog = true;
       }
+    },
+    handleTimeOut() {
+      if (!this.isPlayoffsMode) return;
+
+      const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
+
+      this.markActivePlayerAsFailed();
+      this.markActivePlayerHasPlayed();
+      this.clearTrucoBet();
+
+      if (otherPlayerAlreadyPlayed) {
+        this.$router.push({ name: "gameover" });
+        return;
+      }
+
+      this.timeOutDialog = true;
+    },
+    proceedAfterTimeOut() {
+      this.timeOutDialog = false;
+      this.resetActivePlayerSkips();
+      this.switchActivePlayer();
+      this.resetHelps();
+
+      // Limpa seleções da interface para manter na mesma pergunta limpa
+      this.choice = null;
+      this.color = "#efefef";
     },
     handleTrucoClick() {
       if (!this.isPlayoffsMode) return;

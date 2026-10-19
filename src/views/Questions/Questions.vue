@@ -2,20 +2,23 @@
   <v-app>
     <div class="home app-bg-color fill-height">
       <section v-if="!isLoading" class="pa-6">
-        <PlayOffs
-          v-if="gameMode === 'playoffs'"
-          :player1="player1"
-          :player2="player2"
-          :score1="score1"
-          :score2="score2"
-          :active-player="activePlayer"
-        >
-          <template #left-action>
-            <v-btn large fab color="white" class="mr-6" @click="replaceState">
-              <v-icon color="#012f6d">mdi-home</v-icon>
-            </v-btn>
-          </template>
-        </PlayOffs>
+        <template v-if="gameMode === 'playoffs'">
+          <PlayOffs
+            :player1="player1"
+            :player2="player2"
+            :score1="score1"
+            :score2="score2"
+            :active-player="activePlayer"
+            :timer-reset-key="timerResetKey"
+            @time-up="handleTimeUp"
+          >
+            <template #left-action>
+              <v-btn large fab color="white" class="mr-6" @click="replaceState">
+                <v-icon color="#012f6d">mdi-home</v-icon>
+              </v-btn>
+            </template>
+          </PlayOffs>
+        </template>
 
         <v-row
           v-else
@@ -26,7 +29,6 @@
           <v-btn large fab color="white" @click="replaceState">
             <v-icon color="#012f6d">mdi-home</v-icon>
           </v-btn>
-
           <div
             v-if="gameMode === 'million_game'"
             class="text-right white--text"
@@ -47,7 +49,6 @@
               contain
               class="mx-auto mb-4"
             ></v-img>
-
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
@@ -62,7 +63,6 @@
             </div>
 
             <p class="subtitle-1 mb-6">{{ uiTexts.LOADING_SUBTITLE }}</p>
-
             <InstructionsCarousel :show-controls="false" compact />
           </v-col>
         </v-row>
@@ -75,6 +75,7 @@
           <v-col cols="12" md="10" lg="8" class="px-4">
             <QuestionCard :questions="questions" />
             <QuestionsList
+              ref="qList"
               :questions="questions"
               @playoffs-state-updated="onPlayoffsStateUpdated"
               @million-state-updated="onMillionStateUpdated"
@@ -129,6 +130,7 @@ export default {
       phase: "waiting",
       phaseCurrent: 0,
       phaseTotal: 0,
+      timerResetKey: 0,
     };
   },
   computed: {
@@ -154,6 +156,7 @@ export default {
       handler() {
         this.loadPlayoffsData();
         this.loadMillionData();
+        this.timerResetKey++;
       },
     },
   },
@@ -172,6 +175,11 @@ export default {
       this.score2 = parseInt(localStorage.getItem("score2")) || 0;
       this.activePlayer = parseInt(localStorage.getItem("activePlayer")) || 1;
     },
+    handleTimeUp() {
+      if (this.$refs.qList) {
+        this.$refs.qList.handleTimeOut();
+      }
+    },
     loadMillionData() {
       const stored = localStorage.getItem(MILLION_GAME_CONFIG.STORAGE_KEY);
       this.millionScore = parseInt(stored, 10) || 0;
@@ -186,7 +194,6 @@ export default {
     onMillionStateUpdated(newScore) {
       this.millionScore = newScore;
     },
-
     startProgressLoop() {
       this.stopProgressLoop();
       this.progress = 0;
@@ -195,16 +202,13 @@ export default {
       this.phase = "waiting";
       this.phaseCurrent = 0;
       this.phaseTotal = 0;
-
       const startTime = performance.now();
-
       const tick = () => {
         if (!this.receivedFirstToken) {
           const elapsed = performance.now() - startTime;
           this.targetProgress =
             PROGRESS_CONFIG.WAITING_MAX * (1 - Math.exp(-elapsed / 5000));
         }
-
         const diff = this.targetProgress - this.progress;
         if (diff > 0) {
           this.progress = Math.min(
@@ -212,27 +216,21 @@ export default {
             this.targetProgress
           );
         }
-
         this.animationFrameId = requestAnimationFrame(tick);
       };
-
       this.animationFrameId = requestAnimationFrame(tick);
     },
-
     onQuizProgress({ percent, phase, current, total }) {
       this.receivedFirstToken = true;
       this.targetProgress = Math.max(this.targetProgress, percent);
-
       this.phase = phase;
       if (current) this.phaseCurrent = current;
       if (total) this.phaseTotal = total;
     },
-
     finishProgress() {
       this.receivedFirstToken = true;
       this.targetProgress = 100;
       this.phase = "done";
-
       return new Promise((resolve) => {
         const check = () => {
           if (this.progress >= 99.5) {
@@ -245,7 +243,6 @@ export default {
         check();
       });
     },
-
     stopProgressLoop() {
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
@@ -254,14 +251,11 @@ export default {
     },
     async gerarPerguntasComIA() {
       this.isLoading = true;
-
       const activeThemes = this.$route.query.themes
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
       const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
-
       this.startProgressLoop();
-
       try {
         const iaJson = await GAME_CONFIG.GENERATE_VALIDATED_QUIZ(
           generateFn,
@@ -269,11 +263,9 @@ export default {
           totalQuestions,
           { onProgress: this.onQuizProgress, maxRetries: 0 }
         );
-
         this.questions = iaJson.perguntas.map((itemIA, index) =>
           this.formatarParaModeloDoJogo(itemIA, index)
         );
-
         await this.finishProgress();
       } catch (error) {
         console.error("Erro ao gerar perguntas com IA:", error);
@@ -282,7 +274,6 @@ export default {
         this.isLoading = false;
       }
     },
-
     limparTexto(texto) {
       if (typeof texto !== "string") return "";
       return texto.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, "").trim();
@@ -347,5 +338,4 @@ export default {
   },
 };
 </script>
-
 <style scoped src="./style.css"></style>

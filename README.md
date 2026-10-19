@@ -61,6 +61,15 @@ Modo competitivo para 2 jogadores, disputado por turnos na mesma partida. As reg
   - Se o **outro jogador já jogou alguma vez** e o jogador atual falha novamente (2ª falha, seja erro ou desistência), a partida é **encerrada imediatamente**, redirecionando para a tela de **Fim de Jogo**.
 - Cada jogador possui, portanto, **apenas 1 falha permitida durante toda a partida** (erro ou desistência).
 
+#### Timer de Resposta (TimeOut)
+- Ao lado do nome do jogador ativo, há um **contador regressivo**.
+- O tempo padrão é estipulado em `src/constants/game.js` (geralmente 60 a 90 segundos).
+- O Timer muda de cor conforme o tempo esgota (Verde > Amarelo > Vermelho).
+- **Ao chegar a 00:00:00**, o turno do jogador atual é encerrado imediatamente com uma penalidade idêntica à de erro/desistência.
+  - Um modal de "Tempo Esgotado" é exibido.
+  - Ao clicar em "Passar a vez", **o próximo jogador responde a mesma pergunta** e tem o seu timer iniciado.
+  - Caso o outro jogador já tenha jogado, o TimeOut resulta em Game Over direto.
+
 #### Botão "Desistir"
 
 Disponível apenas no modo PlayOffs. Permite ao jogador ativo encerrar seu turno voluntariamente, mantendo o placar atual **sem penalidades de pontuação**. Segue a mesma regra de "1 falha por jogador" descrita acima: se o outro jogador já tiver jogado, a partida é encerrada.

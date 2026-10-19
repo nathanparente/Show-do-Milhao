@@ -76,6 +76,10 @@ export const PLAYOFFS_SCORING = Object.freeze({
   TRUCO_DOUBLED_ERROR_PENALTY: 20,
 });
 
+export const PLAYOFFS_TIMER_SECONDS = Object.freeze({
+  TIMER_SECONDS: 30,
+});
+
 export const MILLION_GAME_CONFIG = Object.freeze({
   STORAGE_KEY: "millionScore",
   QUESTION_VALUE: 1000,
