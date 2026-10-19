@@ -10,6 +10,19 @@
             <img id="image" height="80px" src="@/assets/images/bg/2.png" />
           </div>
         </a>
+
+        <div class="mt-4">
+          <v-btn
+            large
+            elevation="4"
+            color="white"
+            class="btn-instructions"
+            @click="goToInstructions"
+          >
+            <v-icon left color="#012f6d">mdi-help-circle-outline</v-icon>
+            {{ uiTexts.HOME_INSTRUCTIONS_BUTTON }}
+          </v-btn>
+        </div>
       </v-col>
 
       <v-col cols="12" xs="12" md="4" class="text-center hidden-md-and-down">
@@ -58,16 +71,22 @@
 </template>
 
 <script>
+import { UI_TEXTS } from "@/constants";
+
 export default {
   name: "Home",
   data() {
     return {
       aboutMe: [],
+      uiTexts: UI_TEXTS,
     };
   },
   methods: {
     startGame() {
       this.$router.push("/gamemode");
+    },
+    goToInstructions() {
+      this.$router.push("/instructions");
     },
   },
 };

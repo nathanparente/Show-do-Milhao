@@ -88,3 +88,8 @@ export const PROGRESS_CONFIG = Object.freeze({
   GENERATION_END: 85, // % ao terminar a geração principal
   REGENERATION_END: 97, // % ao terminar as regenerações
 });
+
+export const INSTRUCTIONS_CONFIG = Object.freeze({
+  AUTOPLAY_DELAY: 6000, // ms entre um card e o próximo
+  TRANSITION_SPEED: 500, // ms da animação de troca
+});

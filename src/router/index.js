@@ -14,6 +14,11 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/instructions",
+    name: "GameInstructions",
+    component: () => import("@/views/GameInstructions/GameInstructions"),
+  },
+  {
     path: "/gamemode",
     name: "Gamemode",
     component: load("Gamemode"),
