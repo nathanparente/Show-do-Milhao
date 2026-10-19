@@ -33,12 +33,12 @@ export default {
       // Controle de ajudas usadas por jogador durante toda a partida
       p1HelpsUsed: JSON.parse(localStorage.getItem("p1HelpsUsed")) || {
         cartas: false,
-        gepeto: false,
+        ia: false,
         universitarios: false,
       },
       p2HelpsUsed: JSON.parse(localStorage.getItem("p2HelpsUsed")) || {
         cartas: false,
-        gepeto: false,
+        ia: false,
         universitarios: false,
       },
 
@@ -88,12 +88,12 @@ export default {
         this.p2HasPlayed = false;
         this.p1HelpsUsed = {
           cartas: false,
-          gepeto: false,
+          ia: false,
           universitarios: false,
         };
         this.p2HelpsUsed = {
           cartas: false,
-          gepeto: false,
+          ia: false,
           universitarios: false,
         };
 

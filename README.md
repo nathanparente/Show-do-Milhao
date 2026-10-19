@@ -31,6 +31,7 @@ O jogo conta com dois modos de partida: o modo **Clássico** (single player) e o
 * **[Vuetify](https://vuetifyjs.com/):** Biblioteca de componentes UI baseada em Material Design.
 * **[Ollama](https://ollama.com/):** Execução local de modelos de Inteligência Artificial.
 * **[Llama 3](https://ai.meta.com/llama/):** Modelo de linguagem responsável por criar as perguntas dinamicamente.
+* **[Swiper.js](https://swiperjs.com/) (v8):** Carrossel automático da tela de instruções (compatível com Vue 2).
 
 ---
 
@@ -42,8 +43,9 @@ O jogo conta com dois modos de partida: o modo **Clássico** (single player) e o
   - 50% a 80%: Nível Médio (boas práticas e cenários práticos intermediários).
   - 80% a 100%: Nível Difícil/Especialista (arquitetura avançada, diagnósticos em produção e trade-offs críticos).
 - **Cartas:** Modal com 4 naipes de baralho (com valores de 1 a 4 sorteados aleatoriamente a cada partida) que elimina a quantidade correspondente de alternativas incorretas.
-- **Gepeto:** Exibe a resposta correta por extenso gerada pela IA. Fica automaticamente desabilitado na última pergunta (Pergunta do Milhão).
+- **IA:** Exibe a resposta correta por extenso gerada pela IA. Fica automaticamente desabilitado na última pergunta (Pergunta do Milhão).
 - **Universitários:** Solicita que o jogador peça ajuda de amigos para achar a resposta certa.
+- **Tela "Como Jogar":** Carrossel automático com as regras dos modos de jogo, das ajudas, do Truco e da pontuação (veja a seção [Tela de Instruções](#-tela-de-instruções-gameinstructions)).
 
 ---
 
@@ -65,7 +67,7 @@ Disponível apenas no modo PlayOffs. Permite ao jogador ativo encerrar seu turno
 
 #### Botão "Truco"
 
-Ajuda de **uso único por jogador** (assim como Cartas, Gepeto e Universitários), disponível apenas no modo PlayOffs. Ao ser acionado, abre um modal de aposta com duas opções:
+Ajuda de **uso único por jogador** (assim como Cartas, IA e Universitários), disponível apenas no modo PlayOffs. Ao ser acionado, abre um modal de aposta com duas opções:
 
 - **Aceitar:** o jogador ativo responde a pergunta atual com risco/prêmio dobrado:
   - Se **acertar**: ganha **10 pontos** (em vez de 5).
@@ -77,7 +79,7 @@ Ajuda de **uso único por jogador** (assim como Cartas, Gepeto e Universitários
 
 #### Botão "Pulo"
 
-Disponível em **ambos os modos de jogo** (Clássico/Corrida do Milhão e PlayOffs). Permite ao jogador pular a pergunta atual e avançar diretamente para a próxima, **sem sofrer qualquer penalidade de pontuação**.
+Disponível **apenas no modo Corrida do Milhão** (Clássico). No modo PlayOffs o botão **não é exibido**. Permite ao jogador pular a pergunta atual e avançar diretamente para a próxima, **sem sofrer qualquer penalidade de pontuação**.
 
 - Cada jogador possui direito a **até 3 pulos por partida**.
 - No modo **PlayOffs**, o contador de pulos é **individual por jogador** e é **reiniciado automaticamente** ao final do turno (erro, desistência ou Truco dobrado), voltando a 3 pulos disponíveis quando o jogador assumir o controle novamente.
@@ -90,15 +92,81 @@ Disponível em **ambos os modos de jogo** (Clássico/Corrida do Milhão e PlayOf
   - **Faltando 2 perguntas** para o fim: desabilitado caso o jogador ainda possua **2 ou 3 pulos** disponíveis.
   - **Na última pergunta** (Pergunta do Milhão): **sempre desabilitado**, independentemente da quantidade de pulos restantes.
 
+---
+
+### 📖 Tela de Instruções (GameInstructions)
+
+Tela acessível pelo botão **"Como Jogar"** na Home (rota `/instructions`), que explica as regras do jogo em um carrossel de cards de **500x500px**, no mesmo padrão visual das demais telas.
+
+#### Comportamento do carrossel
+
+- **Autoplay:** avança para o próximo card a cada **6 segundos**, em loop infinito.
+- **Controles:** abaixo do card, um wrapper com seta para a esquerda (`chevron-left`), botão de **pausa/reprodução** no centro e seta para a direita (`chevron-right`).
+- **Indicadores:** pontos clicáveis mostram a posição atual.
+- **Interação:** clicar nas setas ou nos pontos **não interrompe** o autoplay. Só o botão de pausa o interrompe.
+- **Acessibilidade:** navegação por teclado (setas) e `aria-label` nos controles.
+- **Botão "Entendi":** retorna para a tela anterior.
+
+#### Cards
+
+| # | Card | Conteúdo |
+|---|------|----------|
+| 1 | Modos de Jogo | Apresenta os modos "Playoffs" e "Corrida do Milhão" |
+| 2 | Playoffs | Batalha entre 2 jogadores por pontos |
+| 3 | Corrida do Milhão | Modo clássico single player com prêmio de R$ 1 milhão |
+| 4 | As Ajudas | Visão geral das ajudas e da regra de uso único |
+| 5 | Cartas | Elimina alternativas erradas ao escolher um naipe |
+| 6 | IA | Revela a alternativa correta |
+| 7 | Universitários | Ajuda dos colegas |
+| 8 | Pulo | Pula a pergunta sem ganhar nem perder pontos |
+| 9 | Truco (Playoffs) | Regras da aposta, exclusiva do PlayOffs |
+| 10 | Desistir | Passa a vez sem perder pontos |
+| 11 | Pontuação nos Playoffs | Pontos por acerto e por erro |
+
+#### Textos e configurações
+
+Os textos ficam centralizados em `src/constants/uiTexts.js` (chaves `INSTRUCTIONS_*`). Os valores numéricos usam placeholders ligados ao `PLAYOFFS_SCORING` (`src/constants/game.js`), então alterar a pontuação atualiza os cards automaticamente:
+
+| Placeholder | Constante |
+|-------------|-----------|
+| `{normal_win}` | `NORMAL_WIN_POINTS` |
+| `{truco_simple_win}` | `TRUCO_SIMPLE_WIN_POINTS` |
+| `{truco_double_win}` | `TRUCO_DOUBLE_WIN_POINTS` |
+| `{truco_simple_penalty}` | `TRUCO_SIMPLE_ERROR_PENALTY` |
+| `{truco_doubled_penalty}` | `TRUCO_DOUBLED_ERROR_PENALTY` |
+
+O tempo do autoplay e da transição são configurados em `INSTRUCTIONS_CONFIG`:
+
+```javascript
+export const INSTRUCTIONS_CONFIG = Object.freeze({
+  AUTOPLAY_DELAY: 6000,    // ms entre um card e o próximo
+  TRANSITION_SPEED: 500,   // ms da animação de troca
+});
+```
+
+#### Estrutura de arquivos
+
+```
+src/
+├── constants/
+│   ├── game.js              # INSTRUCTIONS_CONFIG e PLAYOFFS_SCORING
+│   └── uiTexts.js           # Textos INSTRUCTIONS_* e HOME_INSTRUCTIONS_BUTTON
+└── views/
+    └── GameInstructions/
+        ├── GameInstructions.vue
+        └── style.css
+```
+
+---
+
 #### Tela de Fim de Jogo (Game Over)
 
 Ao final da partida (por eliminação de ambos os jogadores), o usuário é redirecionado para uma tela de **ranking**, exibindo:
 - Nome e pontuação final de cada jogador, ordenados do maior para o menor placar.
 - Destaque visual (coroa) para o jogador vencedor, quando não há empate.
-- Indicação visual (ícones de check/minus) de quais ajudas (Cartas, Gepeto, Universitários) cada jogador utilizou durante a partida.
+- Indicação visual (ícones de check/minus) de quais ajudas (Cartas, Universitários e Truco) cada jogador utilizou durante a partida.
 
 ---
-
 ## 🛠️ Como Executar o Projeto
 
 ### 1. Pré-requisitos (Configurar o Ollama)

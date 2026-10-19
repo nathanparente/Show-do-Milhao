@@ -86,12 +86,12 @@ export default {
       score2: parseInt(localStorage.getItem("score2")) || 0,
       p1HelpsUsed: JSON.parse(localStorage.getItem("p1HelpsUsed")) || {
         cartas: false,
-        gepeto: false,
+        ia: false,
         universitarios: false,
       },
       p2HelpsUsed: JSON.parse(localStorage.getItem("p2HelpsUsed")) || {
         cartas: false,
-        gepeto: false,
+        ia: false,
         universitarios: false,
       },
     };
@@ -129,7 +129,7 @@ export default {
     buildHelpsList(helpsUsedObj) {
       return [
         { key: "cartas", label: "Cartas", used: !!helpsUsedObj.cartas },
-        { key: "gepeto", label: "Gepeto", used: !!helpsUsedObj.gepeto },
+        { key: "ia", label: "IA", used: !!helpsUsedObj.ia },
         {
           key: "universitarios",
           label: "Universitários",

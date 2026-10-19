@@ -25,7 +25,7 @@ export const UI_TEXTS = Object.freeze({
     "🎉 PARABÉNS! Você respondeu todas as perguntas do Show do Milhão!",
 
   //IA
-  HELP_GEPETO: "Segundo o Gepeto, nossa IA que nunca mente (EU ACHO) ...",
+  HELP_IA: "Após discutirem, Gepeto, Claudião e Geminice conluíram que ....",
 
   //UNIVERSITARIOS
   HELP_UNIVERSITARIOS:
@@ -98,10 +98,9 @@ export const UI_TEXTS = Object.freeze({
   INSTRUCTIONS_TRUCO_TEXT_1:
     "Exclusivo do modo Playoffs. Na sua vez, se o outro jogador achar que você não sabe a resposta, ele pode pedir “truco”.",
   INSTRUCTIONS_TRUCO_TEXT_2:
-    "Se você aceitar e acertar, ganha o dobro ({truco_simple_win} pontos); se errar, perde metade dos pontos.",
+    "Se você aceitar e acertar, ganha {truco_simple_win} pontos; se errar, perde metade dos pontos e mais {truco_simple_penalty} pontos do saldo restante.",
   INSTRUCTIONS_TRUCO_TEXT_3:
-    "Se quiser “dobrar a aposta”, você perde a vez e passa para o adversário: se ele acertar, ganha {truco_double_win} pontos; se errar, perde metade dos pontos e mais {truco_doubled_penalty} pontos do saldo restante.",
-
+    "Se quiser “dobrar a aposta”, você perde a vez e passa para o adversário: se ele acertar, ganha {truco_double_win} pontos; se errar, perde {truco_doubled_penalty} pontos.",
   INSTRUCTIONS_GIVEUP_TITLE: "Desistir",
   INSTRUCTIONS_GIVEUP_TEXT:
     "Se o jogador da vez quiser desistir, ele não perde pontos e passa a vez.",

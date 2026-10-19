@@ -53,12 +53,12 @@
           </div>
         </div>
 
-        <!-- FLUXO DE AJUDA: GEPETO -->
-        <div v-else-if="helpType === 'gepeto'">
+        <!-- FLUXO DE AJUDA: IA -->
+        <div v-else-if="helpType === 'ia'">
           <p class="friend-help-text mb-2">
-            {{ uiTexts.HELP_GEPETO }}
+            {{ uiTexts.HELP_IA }}
           </p>
-          <p class="gepeto-answer-text">"{{ gepetoAnswer }}"</p>
+          <p class="ia-answer-text">"{{ iaAnswer }}"</p>
         </div>
 
         <!-- FLUXO DE AJUDA: UNIVERSITÁRIOS -->
@@ -131,7 +131,7 @@ export default {
       }
       return this.callHelp;
     },
-    gepetoAnswer() {
+    iaAnswer() {
       if (typeof this.callHelp === "object" && this.callHelp !== null) {
         return this.callHelp.answer || "";
       }
@@ -143,7 +143,7 @@ export default {
     },
     showDialog() {
       return (
-        this.helpType === "gepeto" ||
+        this.helpType === "ia" ||
         this.helpType === "universitarios" ||
         this.helpType === "cartas"
       );

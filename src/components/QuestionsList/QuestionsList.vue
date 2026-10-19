@@ -99,8 +99,8 @@ export default {
           isDisabled: false,
         },
         {
-          id: "btn-gepeto",
-          title: "Gepeto",
+          id: "btn-ia",
+          title: "IA",
           icon: "mdi-robot",
           isDisabled: false,
         },
@@ -175,8 +175,8 @@ export default {
       if (this.buttons[index].isDisabled) return;
       if (id === "btn-cartas") {
         this.getCartasHelp(index);
-      } else if (id === "btn-gepeto") {
-        this.getGepetoHelp(index);
+      } else if (id === "btn-ia") {
+        this.getIaHelp(index);
       } else if (id === "btn-universitarios") {
         this.getUniversitariosHelp(index);
       }
@@ -337,17 +337,17 @@ export default {
       this.buttons[index].isDisabled = true;
       this.markHelpUsed("cartas");
     },
-    getGepetoHelp(index) {
+    getIaHelp(index) {
       if (!this.currentQuestion) return;
       const respostaCorreta = this.currentQuestion.choices.find(
         (item) => item.isTrue
       );
       this.updateCallHelp({
-        type: "gepeto",
+        type: "ia",
         answer: respostaCorreta ? respostaCorreta.answer : "",
       });
       this.buttons[index].isDisabled = true;
-      this.markHelpUsed("gepeto");
+      this.markHelpUsed("ia");
     },
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");

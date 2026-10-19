@@ -2,7 +2,7 @@
   <v-col cols="auto" class="help-buttons-wrapper">
     <v-row justify="space-between" align="center" no-gutters>
       <template v-for="(btn, index) in buttons">
-        <!-- Gepeto fica oculto no modo Playoffs -->
+        <!-- IA item fica oculto no modo Playoffs -->
         <v-col
           v-if="isButtonVisible(btn)"
           :key="btn.id"
@@ -68,13 +68,13 @@ export default {
   },
   methods: {
     isButtonVisible(btn) {
-      if (btn.id === "btn-gepeto" && this.isPlayoffsMode) {
+      if (btn.id === "btn-ia" && this.isPlayoffsMode) {
         return false;
       }
       return true;
     },
     isButtonDisabled(btn) {
-      if (btn.id === "btn-gepeto" && this.isLastQuestion) {
+      if (btn.id === "btn-ia" && this.isLastQuestion) {
         return true;
       }
       return btn.isDisabled;
