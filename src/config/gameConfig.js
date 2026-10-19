@@ -1,9 +1,4 @@
-import {
-  TOTAL_QUESTIONS,
-  THEMES,
-  THEME_KEYWORDS,
-  PROGRESS_CONFIG,
-} from "@/constants/game";
+import { THEMES, THEME_KEYWORDS, PROGRESS_CONFIG } from "@/constants/game";
 
 import {
   SYSTEM_PROMPT,
@@ -11,8 +6,12 @@ import {
   QUIZ_EXAMPLE,
 } from "@/constants/quizPrompt";
 
+import { getConfig } from "@/utils/configManager";
+
 export const GAME_CONFIG = Object.freeze({
-  TOTAL_QUESTIONS,
+  get TOTAL_QUESTIONS() {
+    return getConfig().TOTAL_QUESTIONS;
+  },
   THEMES,
 
   _shuffleArray(arr) {

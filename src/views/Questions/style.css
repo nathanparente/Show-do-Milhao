@@ -45,6 +45,15 @@
   line-height: 1.1;
 }
 
+.loading-col {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
 @media (max-width: 600px) {
   .accumulated-value {
     font-size: 1.2rem;

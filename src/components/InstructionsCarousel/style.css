@@ -1,0 +1,141 @@
+.carousel-wrapper {
+  width: 500px;
+  max-width: 100%;
+  margin: 0 auto;
+  margin-top: 24px;
+}
+
+.instructions-swiper {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+}
+
+/* CARD 500x500 */
+.instruction-card {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 500px;
+  height: 500px;
+  box-sizing: border-box;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 3px solid transparent !important;
+  border-radius: 12px !important;
+  padding: 32px !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.icon-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.instruction-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #012f6d;
+  margin-bottom: 16px;
+}
+
+.instruction-text {
+  font-size: 18px;
+  line-height: 1.5;
+  color: #000000;
+  margin-bottom: 12px;
+}
+
+.instruction-text:last-child {
+  margin-bottom: 0;
+}
+
+/* INDICADORES */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background-color: #57e71d;
+  transform: scale(1.3);
+}
+
+/* WRAPPER DAS SETAS + PAUSE */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+/* VERSÃO COMPACTA (tela de loading) */
+.carousel-wrapper.compact {
+  width: 300px;
+}
+
+.carousel-wrapper.compact .instruction-card {
+  width: 100%;
+  max-width: 300px;
+  height: 200px;
+  padding: 12px !important;
+}
+
+.carousel-wrapper.compact .icon-row {
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.carousel-wrapper.compact .instruction-title {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.carousel-wrapper.compact .instruction-text {
+  font-size: 13px;
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+
+/* Telas pequenas: o card ocupa a largura disponível */
+@media (max-width: 540px) {
+  .instruction-card {
+    height: auto;
+    min-height: 460px;
+    padding: 24px !important;
+  }
+
+  .instruction-title {
+    font-size: 24px;
+  }
+
+  .instruction-text {
+    font-size: 16px;
+  }
+}

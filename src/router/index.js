@@ -14,6 +14,16 @@ const routes = [
     component: load("Home"),
   },
   {
+    path: "/instructions",
+    name: "GameInstructions",
+    component: load("GameInstructions"),
+  },
+  {
+    path: "/game-config",
+    name: "GameConfig",
+    component: load("GameConfig"),
+  },
+  {
     path: "/gamemode",
     name: "Gamemode",
     component: load("Gamemode"),

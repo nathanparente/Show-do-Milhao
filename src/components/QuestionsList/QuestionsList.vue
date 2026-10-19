@@ -4,7 +4,8 @@
       <HelpButtons
         :buttons="buttons"
         :is-last-question="isLastQuestion"
-        :show-truco="isPlayoffsMode"
+        :is-playoffs-mode="isPlayoffsMode"
+        :show-truco="showTrucoButton"
         :is-truco-disabled="trucoButtonDisabled"
         :is-skip-disabled="isSkipDisabled"
         :skips-remaining="skipsRemaining"
@@ -45,6 +46,7 @@
       @accept="handleTrucoAccept"
       @double-down="handleTrucoDoubleDown"
     />
+    <TimeOutDialog :dialog="timeOutDialog" @continue="proceedAfterTimeOut" />
   </section>
 </template>
 
@@ -58,6 +60,7 @@ import HelpButtons from "./components/HelpButtons.vue";
 import GiveUpButton from "./components/GiveUpButton.vue";
 import ChoicesList from "./components/ChoicesList.vue";
 import GoldBars from "./components/GoldBars.vue";
+import { getConfig } from "@/utils/configManager";
 
 export default {
   name: "QuestionsList",
@@ -72,6 +75,7 @@ export default {
     GiveUpDialog: () => import("@/components/GiveUpDialog/GiveUpDialog"),
     TrucoDialog: () =>
       import("@/components/QuestionsList/components/TrucoDialog.vue"),
+    TimeOutDialog: () => import("@/components/TimeOutDialog/TimeOutDialog"), // IMPORTA O NOVO MODAL
   },
   mixins: [playoffsMixin, skipMixin, millionMixin],
   props: {
@@ -81,6 +85,39 @@ export default {
     },
   },
   data() {
+    const currentConfig = getConfig();
+
+    // Obtém o modo atual do localStorage (precisa ser síncrono no data)
+    const mode = localStorage.getItem("gameMode") || "playoffs";
+    const activeHelps = currentConfig.ACTIVE_HELPS[mode];
+
+    // Filtra os botões de acordo com a configuração
+    const buttons = [];
+    if (activeHelps.cartas) {
+      buttons.push({
+        id: "btn-cartas",
+        title: "Cartas",
+        icon: "mdi-cards-playing-spade-multiple",
+        isDisabled: false,
+      });
+    }
+    if (activeHelps.ia) {
+      buttons.push({
+        id: "btn-ia",
+        title: "IA",
+        icon: "mdi-robot",
+        isDisabled: false,
+      });
+    }
+    if (activeHelps.universitarios) {
+      buttons.push({
+        id: "btn-universitarios",
+        title: "Universitários",
+        icon: "mdi-account-group",
+        isDisabled: false,
+      });
+    }
+
     return {
       dialog: false,
       turnLostDialog: false,
@@ -88,30 +125,13 @@ export default {
       turnLostNewScore: 0,
       giveUpDialog: false,
       trucoDialog: false,
+      timeOutDialog: false,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
-      buttons: [
-        {
-          id: "btn-cartas",
-          title: "Cartas",
-          icon: "mdi-cards-playing-spade-multiple",
-          isDisabled: false,
-        },
-        {
-          id: "btn-gepeto",
-          title: "Gepeto",
-          icon: "mdi-robot",
-          isDisabled: false,
-        },
-        {
-          id: "btn-universitarios",
-          title: "Universitários",
-          icon: "mdi-account-group",
-          isDisabled: false,
-        },
-      ],
+      buttons: buttons,
+      currentConfig: currentConfig,
+      activeHelps: activeHelps,
       choices: [],
-      choice: null,
       color: "#efefef",
     };
   },
@@ -133,8 +153,11 @@ export default {
         this.currentIndex === this.questions.length - 1
       );
     },
-    trucoButtonDisabled() {
-      return !!this.trucoBet || this.hasActivePlayerUsedTruco;
+    showTrucoButton() {
+      return this.isPlayoffsMode && this.activeHelps.truco;
+    },
+    showSkipButton() {
+      return this.activeHelps.pulo;
     },
     showGiveUpButton() {
       return this.isPlayoffsMode || this.isMillionMode;
@@ -174,8 +197,8 @@ export default {
       if (this.buttons[index].isDisabled) return;
       if (id === "btn-cartas") {
         this.getCartasHelp(index);
-      } else if (id === "btn-gepeto") {
-        this.getGepetoHelp(index);
+      } else if (id === "btn-ia") {
+        this.getIaHelp(index);
       } else if (id === "btn-universitarios") {
         this.getUniversitariosHelp(index);
       }
@@ -201,13 +224,18 @@ export default {
         this.markActivePlayerHasPlayed();
         this.clearTrucoBet();
       }
-
       if (this.isMillionMode) {
         this.addMillionPoints();
       }
 
       const currentId = parseInt(this.$route.params.questionId) || 1;
-      if (currentId < this.questions.length) {
+
+      // Garante que questions é um array válido antes de checar o tamanho
+      const totalQuestions = Array.isArray(this.questions)
+        ? this.questions.length
+        : 0;
+
+      if (totalQuestions > 0 && currentId < totalQuestions) {
         this.$router.push(`/questions/${currentId + 1}`);
       } else {
         this.clearGameData();
@@ -285,6 +313,32 @@ export default {
         this.dialog = true;
       }
     },
+    handleTimeOut() {
+      if (!this.isPlayoffsMode) return;
+
+      const otherPlayerAlreadyPlayed = this.hasOtherPlayerPlayedBefore();
+
+      this.markActivePlayerAsFailed();
+      this.markActivePlayerHasPlayed();
+      this.clearTrucoBet();
+
+      if (otherPlayerAlreadyPlayed) {
+        this.$router.push({ name: "gameover" });
+        return;
+      }
+
+      this.timeOutDialog = true;
+    },
+    proceedAfterTimeOut() {
+      this.timeOutDialog = false;
+      this.resetActivePlayerSkips();
+      this.switchActivePlayer();
+      this.resetHelps();
+
+      // Limpa seleções da interface para manter na mesma pergunta limpa
+      this.choice = null;
+      this.color = "#efefef";
+    },
     handleTrucoClick() {
       if (!this.isPlayoffsMode) return;
       if (this.trucoBet) return;
@@ -336,17 +390,17 @@ export default {
       this.buttons[index].isDisabled = true;
       this.markHelpUsed("cartas");
     },
-    getGepetoHelp(index) {
+    getIaHelp(index) {
       if (!this.currentQuestion) return;
       const respostaCorreta = this.currentQuestion.choices.find(
         (item) => item.isTrue
       );
       this.updateCallHelp({
-        type: "gepeto",
+        type: "ia",
         answer: respostaCorreta ? respostaCorreta.answer : "",
       });
       this.buttons[index].isDisabled = true;
-      this.markHelpUsed("gepeto");
+      this.markHelpUsed("ia");
     },
     getUniversitariosHelp(index) {
       this.updateCallHelp("universitarios");

@@ -1,0 +1,17 @@
+.instructions-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-generate {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #012f6d !important;
+  text-transform: none !important;
+  padding: 12px 36px !important;
+  border-radius: 28px !important;
+}

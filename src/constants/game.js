@@ -1,4 +1,4 @@
-export const TOTAL_QUESTIONS = 15;
+export const TOTAL_QUESTIONS = 20;
 
 export const THEMES = Object.freeze(["Desenvolvimento Web", "UI/UX", "CRO"]);
 
@@ -76,6 +76,10 @@ export const PLAYOFFS_SCORING = Object.freeze({
   TRUCO_DOUBLED_ERROR_PENALTY: 20,
 });
 
+export const PLAYOFFS_TIMER_SECONDS = Object.freeze({
+  TIMER_SECONDS: 30,
+});
+
 export const MILLION_GAME_CONFIG = Object.freeze({
   STORAGE_KEY: "millionScore",
   QUESTION_VALUE: 1000,
@@ -87,4 +91,9 @@ export const PROGRESS_CONFIG = Object.freeze({
   WAITING_MAX: 8, // % máximo enquanto espera o primeiro token
   GENERATION_END: 85, // % ao terminar a geração principal
   REGENERATION_END: 97, // % ao terminar as regenerações
+});
+
+export const INSTRUCTIONS_CONFIG = Object.freeze({
+  AUTOPLAY_DELAY: 6000, // ms entre um card e o próximo
+  TRANSITION_SPEED: 500, // ms da animação de troca
 });

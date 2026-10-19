@@ -40,3 +40,12 @@
 .padding_top_50 {
   padding-top: 50px;
 }
+
+.btn-instructions {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #012f6d !important;
+  text-transform: none !important;
+  padding: 12px 36px !important;
+  border-radius: 28px !important;
+}
