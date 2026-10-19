@@ -11,16 +11,28 @@
           </div>
         </a>
 
-        <div class="mt-4">
+        <!-- Área dos Botões Extras -->
+        <div class="mt-4 d-flex justify-center flex-wrap">
           <v-btn
-            large
+            medium
             elevation="4"
             color="white"
-            class="btn-instructions"
+            class="btn-instructions mx-2 mb-2"
             @click="goToInstructions"
           >
             <v-icon left color="#012f6d">mdi-help-circle-outline</v-icon>
             {{ uiTexts.HOME_INSTRUCTIONS_BUTTON }}
+          </v-btn>
+
+          <v-btn
+            medium
+            elevation="4"
+            color="white"
+            class="btn-instructions mx-2 mb-2"
+            @click="goToGameConfig"
+          >
+            <v-icon left color="#012f6d">mdi-cog-outline</v-icon>
+            Game Config
           </v-btn>
         </div>
       </v-col>
@@ -55,6 +67,7 @@
             </p>
           </div>
         </v-col>
+
         <v-col
           cols="12"
           xs="12"
@@ -87,6 +100,9 @@ export default {
     },
     goToInstructions() {
       this.$router.push("/instructions");
+    },
+    goToGameConfig() {
+      this.$router.push("/game-config");
     },
   },
 };

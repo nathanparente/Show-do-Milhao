@@ -5,7 +5,7 @@
         :buttons="buttons"
         :is-last-question="isLastQuestion"
         :is-playoffs-mode="isPlayoffsMode"
-        :show-truco="isPlayoffsMode"
+        :show-truco="showTrucoButton"
         :is-truco-disabled="trucoButtonDisabled"
         :is-skip-disabled="isSkipDisabled"
         :skips-remaining="skipsRemaining"
@@ -60,6 +60,7 @@ import HelpButtons from "./components/HelpButtons.vue";
 import GiveUpButton from "./components/GiveUpButton.vue";
 import ChoicesList from "./components/ChoicesList.vue";
 import GoldBars from "./components/GoldBars.vue";
+import { getConfig } from "@/utils/configManager";
 
 export default {
   name: "QuestionsList",
@@ -84,6 +85,39 @@ export default {
     },
   },
   data() {
+    const currentConfig = getConfig();
+
+    // Obtém o modo atual do localStorage (precisa ser síncrono no data)
+    const mode = localStorage.getItem("gameMode") || "playoffs";
+    const activeHelps = currentConfig.ACTIVE_HELPS[mode];
+
+    // Filtra os botões de acordo com a configuração
+    const buttons = [];
+    if (activeHelps.cartas) {
+      buttons.push({
+        id: "btn-cartas",
+        title: "Cartas",
+        icon: "mdi-cards-playing-spade-multiple",
+        isDisabled: false,
+      });
+    }
+    if (activeHelps.ia) {
+      buttons.push({
+        id: "btn-ia",
+        title: "IA",
+        icon: "mdi-robot",
+        isDisabled: false,
+      });
+    }
+    if (activeHelps.universitarios) {
+      buttons.push({
+        id: "btn-universitarios",
+        title: "Universitários",
+        icon: "mdi-account-group",
+        isDisabled: false,
+      });
+    }
+
     return {
       dialog: false,
       turnLostDialog: false,
@@ -94,28 +128,10 @@ export default {
       timeOutDialog: false,
       alternatives: ["A", "B", "C", "D"],
       uiTexts: UI_TEXTS,
-      buttons: [
-        {
-          id: "btn-cartas",
-          title: "Cartas",
-          icon: "mdi-cards-playing-spade-multiple",
-          isDisabled: false,
-        },
-        {
-          id: "btn-ia",
-          title: "IA",
-          icon: "mdi-robot",
-          isDisabled: false,
-        },
-        {
-          id: "btn-universitarios",
-          title: "Universitários",
-          icon: "mdi-account-group",
-          isDisabled: false,
-        },
-      ],
+      buttons: buttons,
+      currentConfig: currentConfig,
+      activeHelps: activeHelps,
       choices: [],
-      choice: null,
       color: "#efefef",
     };
   },
@@ -137,8 +153,11 @@ export default {
         this.currentIndex === this.questions.length - 1
       );
     },
-    trucoButtonDisabled() {
-      return !!this.trucoBet || this.hasActivePlayerUsedTruco;
+    showTrucoButton() {
+      return this.isPlayoffsMode && this.activeHelps.truco;
+    },
+    showSkipButton() {
+      return this.activeHelps.pulo;
     },
     showGiveUpButton() {
       return this.isPlayoffsMode || this.isMillionMode;

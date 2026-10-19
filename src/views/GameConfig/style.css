@@ -1,0 +1,17 @@
+.app-bg-color {
+  background-color: #012f6d;
+}
+.config-container {
+  max-width: 900px;
+}
+.config-card {
+  background-color: #ffffff;
+}
+.config-section-title {
+  color: #012f6d;
+  border-bottom: 2px solid #eeeeee;
+  padding-bottom: 8px;
+}
+.bg-transparent {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}

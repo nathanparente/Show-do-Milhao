@@ -194,15 +194,6 @@ export default {
           title: t.INSTRUCTIONS_GIVEUP_TITLE,
           paragraphs: [t.INSTRUCTIONS_GIVEUP_TEXT],
         },
-        {
-          id: 11,
-          icons: ["mdi-star-circle"],
-          title: t.INSTRUCTIONS_SCORE_TITLE,
-          paragraphs: [
-            fmt(t.INSTRUCTIONS_SCORE_TEXT_1),
-            fmt(t.INSTRUCTIONS_SCORE_TEXT_2),
-          ],
-        },
       ];
     },
   },

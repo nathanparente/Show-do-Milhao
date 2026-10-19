@@ -62,7 +62,6 @@
               </div>
             </div>
 
-            <p class="subtitle-1 mb-6">{{ uiTexts.LOADING_SUBTITLE }}</p>
             <InstructionsCarousel :show-controls="false" compact />
           </v-col>
         </v-row>
@@ -101,6 +100,7 @@
 import { GAME_CONFIG } from "@/config/gameConfig";
 import { UI_TEXTS, MILLION_GAME_CONFIG, PROGRESS_CONFIG } from "@/constants";
 import { generateFn } from "@/services/ollamaService";
+import { getConfig } from "@/utils/configManager";
 
 export default {
   name: "Questions",
@@ -254,7 +254,7 @@ export default {
       const activeThemes = this.$route.query.themes
         ? this.$route.query.themes.split(",")
         : GAME_CONFIG.THEMES;
-      const totalQuestions = GAME_CONFIG.TOTAL_QUESTIONS;
+      const totalQuestions = getConfig().TOTAL_QUESTIONS;
       this.startProgressLoop();
       try {
         const iaJson = await GAME_CONFIG.GENERATE_VALIDATED_QUIZ(

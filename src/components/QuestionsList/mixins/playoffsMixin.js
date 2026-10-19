@@ -1,4 +1,5 @@
 import { PLAYOFFS_SCORING } from "@/constants";
+import { getConfig } from "@/utils/configManager";
 
 /**
  * Mixin responsável por toda a lógica de estado e regras de negócio
@@ -253,13 +254,10 @@ export default {
      * considerando se há aposta de truco ativa
      */
     getPointsToWin() {
-      if (this.trucoBet === "simple") {
-        return PLAYOFFS_SCORING.TRUCO_SIMPLE_WIN_POINTS;
-      }
-      if (this.trucoBet === "doubled") {
-        return PLAYOFFS_SCORING.TRUCO_DOUBLE_WIN_POINTS;
-      }
-      return PLAYOFFS_SCORING.NORMAL_WIN_POINTS;
+      const scoring = getConfig().PLAYOFFS_SCORING;
+      if (this.trucoBet === "simple") return scoring.TRUCO_SIMPLE_WIN_POINTS;
+      if (this.trucoBet === "doubled") return scoring.TRUCO_DOUBLE_WIN_POINTS;
+      return scoring.NORMAL_WIN_POINTS;
     },
     /**
      * Aplica a penalidade de ERRO COM TRUCO SIMPLES ao jogador ativo:
@@ -268,17 +266,18 @@ export default {
     applyTrucoSimpleErrorPenalty() {
       let playerName;
       let newScore;
+      const penalty = getConfig().PLAYOFFS_SCORING.TRUCO_SIMPLE_ERROR_PENALTY;
 
       if (this.activePlayer === 1) {
         playerName = this.player1;
         this.score1 = Math.floor(this.score1 / 2);
-        this.score1 = this.score1 - PLAYOFFS_SCORING.TRUCO_SIMPLE_ERROR_PENALTY;
+        this.score1 = this.score1 - penalty;
         newScore = this.score1;
         localStorage.setItem("score1", this.score1.toString());
       } else {
         playerName = this.player2;
         this.score2 = Math.floor(this.score2 / 2);
-        this.score2 = this.score2 - PLAYOFFS_SCORING.TRUCO_SIMPLE_ERROR_PENALTY;
+        this.score2 = this.score2 - penalty;
         newScore = this.score2;
         localStorage.setItem("score2", this.score2.toString());
       }
@@ -293,17 +292,16 @@ export default {
     applyTrucoDoubledErrorPenalty() {
       let playerName;
       let newScore;
+      const penalty = getConfig().PLAYOFFS_SCORING.TRUCO_DOUBLED_ERROR_PENALTY;
 
       if (this.activePlayer === 1) {
         playerName = this.player1;
-        this.score1 =
-          this.score1 - PLAYOFFS_SCORING.TRUCO_DOUBLED_ERROR_PENALTY;
+        this.score1 = this.score1 - penalty;
         newScore = this.score1;
         localStorage.setItem("score1", this.score1.toString());
       } else {
         playerName = this.player2;
-        this.score2 =
-          this.score2 - PLAYOFFS_SCORING.TRUCO_DOUBLED_ERROR_PENALTY;
+        this.score2 = this.score2 - penalty;
         newScore = this.score2;
         localStorage.setItem("score2", this.score2.toString());
       }

@@ -8,7 +8,6 @@ export const UI_TEXTS = Object.freeze({
 
   //LOADING SCREEN
   LOADING_TITLE: "Nossa LLama Tech está gerando as perguntas do jogo...",
-  LOADING_SUBTITLE: "Já pensou no que vai gastar quando ganhar um milhão ?",
 
   //LOST GAME
   LOST_GAME_MODAL_TEXT:
@@ -96,17 +95,12 @@ export const UI_TEXTS = Object.freeze({
 
   INSTRUCTIONS_TRUCO_TITLE: "Truco (Playoffs)",
   INSTRUCTIONS_TRUCO_TEXT_1:
-    "Só nos Playoffs: na sua vez, o adversário pode pedir “truco” e isso muda a dinâmica do jogo.",
+    "Na sua vez, o adversário pode pedir “truco” e isso muda a dinâmica do jogo.",
   INSTRUCTIONS_TRUCO_TEXT_2:
     "Ao aceitar: acerte e ganhe {truco_simple_win} pts; erre e perca metade dos pontos + {truco_simple_penalty} pts do saldo.",
   INSTRUCTIONS_TRUCO_TEXT_3:
-    "Ao “dobrar”, a vez vai para o adversário: acerto vale +{truco_double_win} pts; erro tira {truco_doubled_penalty} pts.",
+    "Ao “dobrar a aposta”, a vez vai para o adversário: acerto vale +{truco_double_win} pts; erro tira {truco_doubled_penalty} pts.",
   INSTRUCTIONS_GIVEUP_TITLE: "Desistir",
   INSTRUCTIONS_GIVEUP_TEXT:
     "Se o jogador da vez quiser desistir, ele não perde pontos e passa a vez.",
-
-  INSTRUCTIONS_SCORE_TITLE: "Pontuação nos Playoffs",
-  INSTRUCTIONS_SCORE_TEXT_1:
-    "Cada pergunta certa vale {normal_win} pontos no modo Playoffs.",
-  INSTRUCTIONS_SCORE_TEXT_2: "Se errar, você perde {normal_win} pontos.",
 });

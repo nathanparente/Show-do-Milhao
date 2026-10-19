@@ -1,4 +1,5 @@
 import { MILLION_GAME_CONFIG } from "@/constants";
+import { getConfig } from "@/utils/configManager";
 
 export default {
   data() {
@@ -19,7 +20,7 @@ export default {
     },
     addMillionPoints() {
       if (!this.isMillionMode) return;
-      this.millionScore += MILLION_GAME_CONFIG.QUESTION_VALUE;
+      this.millionScore += getConfig().MILLION_GAME_CONFIG.QUESTION_VALUE;
       localStorage.setItem(MILLION_GAME_CONFIG.STORAGE_KEY, this.millionScore);
       this.emitMillionStateUpdate();
     },

@@ -13,6 +13,7 @@
 
 <script>
 import { PLAYOFFS_TIMER_SECONDS } from "@/constants/game";
+import { getConfig } from "@/utils/configManager";
 
 export default {
   name: "PlayerTimer",
@@ -79,13 +80,7 @@ export default {
   },
   methods: {
     getInitialSeconds() {
-      if (
-        PLAYOFFS_TIMER_SECONDS &&
-        typeof PLAYOFFS_TIMER_SECONDS.TIMER_SECONDS === "number"
-      ) {
-        return PLAYOFFS_TIMER_SECONDS.TIMER_SECONDS;
-      }
-      return 60;
+      return getConfig().PLAYOFFS_TIMER_SECONDS.TIMER_SECONDS || 60;
     },
     startTimer() {
       this.stopTimer();
