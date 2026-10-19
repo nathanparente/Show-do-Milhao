@@ -38,13 +38,8 @@
       </section>
 
       <section>
-        <v-row
-          v-if="isLoading"
-          justify="center"
-          align="center"
-          style="min-height: 70vh"
-        >
-          <v-col cols="12" class="text-center white--text">
+        <v-row v-if="isLoading" justify="center" align="center">
+          <v-col cols="12" class="loading-col white--text">
             <v-img
               src="@/assets/images/bg/loading-llama.gif"
               max-width="200"
@@ -52,10 +47,12 @@
               contain
               class="mx-auto mb-4"
             ></v-img>
+
             <h2 class="text-h5 font-weight-bold">
               {{ uiTexts.LOADING_TITLE }}
             </h2>
             <p class="progress-phase" aria-live="polite">{{ phaseText }}</p>
+
             <div class="progress-container mx-auto">
               <div class="progress-fill" :style="{ width: progress + '%' }">
                 <span v-if="progress > 10" class="progress-text">
@@ -63,7 +60,10 @@
                 </span>
               </div>
             </div>
+
             <p class="subtitle-1 mb-6">{{ uiTexts.LOADING_SUBTITLE }}</p>
+
+            <InstructionsCarousel :show-controls="false" compact />
           </v-col>
         </v-row>
 
@@ -107,6 +107,8 @@ export default {
     QuestionCard: () => import("@/components/QuestionCard/QuestionCard"),
     QuestionsList: () => import("@/components/QuestionsList/QuestionsList"),
     PlayOffs: () => import("@/components/PlayOffs/PlayOffs"),
+    InstructionsCarousel: () =>
+      import("@/components/InstructionsCarousel/InstructionsCarousel"),
   },
   data() {
     return {
