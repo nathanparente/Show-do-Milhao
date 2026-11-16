@@ -13,7 +13,7 @@
         <v-card class="pa-6 rounded-lg config-card" elevation="4">
           <v-form ref="form" v-model="valid">
             <!-- Configurações Gerais -->
-            <h3 class="mb-4 config-section-title">Geral</h3>
+            <h3 class="mb-4 config-section-title">Gestão</h3>
             <v-row>
               <v-col cols="12" md="6">
                 <v-text-field
