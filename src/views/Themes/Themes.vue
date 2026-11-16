@@ -62,18 +62,13 @@ export default {
         },
         { id: "uiux", title: "UI/UX", value: "UI/UX" },
         { id: "cro", title: "CRO", value: "CRO" },
-        { id: "geral", title: "Geral", value: "Geral" },
+        { id: "gestao", title: "Gestao", value: "Gestao" },
       ],
       selectedThemes: [],
     };
   },
   methods: {
     isSelected(theme) {
-      if (theme.id === "geral") {
-        return (
-          this.selectedThemes.includes("Geral") || this.allIndividualSelected()
-        );
-      }
       return this.selectedThemes.includes(theme.value);
     },
 
@@ -83,45 +78,20 @@ export default {
     },
 
     toggleTheme(theme) {
-      if (theme.id === "geral") {
-        if (this.isSelected(theme)) {
-          this.selectedThemes = [];
-        } else {
-          this.selectedThemes = [
-            "Desenvolvimento Web",
-            "UI/UX",
-            "CRO",
-            "Geral",
-          ];
-        }
+      const index = this.selectedThemes.indexOf(theme.value);
+      if (index > -1) {
+        this.selectedThemes.splice(index, 1);
       } else {
-        this.selectedThemes = this.selectedThemes.filter((t) => t !== "Geral");
-
-        const index = this.selectedThemes.indexOf(theme.value);
-        if (index > -1) {
-          this.selectedThemes.splice(index, 1);
-        } else {
-          this.selectedThemes.push(theme.value);
-        }
-
-        if (this.allIndividualSelected()) {
-          this.selectedThemes.push("Geral");
-        }
+        this.selectedThemes.push(theme.value);
       }
     },
 
     generateQuestions() {
       if (this.selectedThemes.length === 0) return;
 
-      let themesToPass = this.selectedThemes.filter((t) => t !== "Geral");
-
-      if (themesToPass.length === 0) {
-        themesToPass = ["Desenvolvimento Web", "UI/UX", "CRO"];
-      }
-
       this.$router.push({
         path: "/questions/1",
-        query: { themes: themesToPass.join(",") },
+        query: { themes: this.selectedThemes.join(",") },
       });
     },
   },
